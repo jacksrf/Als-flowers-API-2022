@@ -41,7 +41,7 @@ var configDB = require('./config/database.js');
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
-app.use(timeout(120000));
+app.use(timeout(120000000));
 app.use(haltOnTimedout);
 
 

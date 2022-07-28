@@ -124,8 +124,8 @@ router.get('/', isLoggedIn, function(req, res, next) {
 
 router.get('/orders', isLoggedIn, function(req, res, next) {
   var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-  console.log(ip)
-  console.log(req)
+  //console.log(ip)
+  //console.log(req)
   var db = req.db;
   var ordersDB = db.get('orders')
   ordersDB.find({}, {
@@ -135,7 +135,7 @@ router.get('/orders', isLoggedIn, function(req, res, next) {
     }
   }, function(err, orders) {
     console.log(err)
-    console.log(orders)
+//    console.log(orders)
     var todaysOrdersClean = Array.from(new Set(orders.map(a => a.id)))
       .map(id => {
         return orders.find(a => a.id === id)
@@ -149,8 +149,8 @@ router.get('/orders', isLoggedIn, function(req, res, next) {
 
 router.get('/orders/today', isLoggedIn, function(req, res, next) {
   var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-  console.log(ip)
-  console.log(req)
+  //console.log(ip)
+  //console.log(req)
   var db = req.db;
   var today = moment().format('YYYY/MM/DD').toString()
   // var today = '2020/12/23'
