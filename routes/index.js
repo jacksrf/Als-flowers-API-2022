@@ -29,7 +29,7 @@ router.use(function(req, res, next) {
 
 
 // router.get('/shop-info', function(req, res, next) {
-//   fetch("https://wild-things-bhm.myshopify.com/admin/api/graphql.json", {
+//   fetch("https://als-flowers.myshopify.com/admin/api/graphql.json", {
 //     method: "POST",
 //     headers: {
 //       "Content-Type": "application/json",
@@ -423,7 +423,7 @@ router.post('/new2/order', function(req, res, next) {
           'height': 2200
         }
               // console.log(doc._id)
-              webshot("https://admin-wildthings.devotestudio.com/order/pdf/" + doc._id, "./public/pdf/" + doc._id + ".pdf", options, function(err) {
+              webshot("https://admin.alsflowersmontgomery.com/order/pdf/" + doc._id, "./public/pdf/" + doc._id + ".pdf", options, function(err) {
                 console.log(err)
                 // setTimeout(function() {
                 // 545151
@@ -431,13 +431,13 @@ router.post('/new2/order', function(req, res, next) {
                   "printer": 69910985,
                   "title": "Order: " + doc.order_number,
                   "contentType": "pdf_uri",
-                  "content": "https://api-wildthings.devotestudio.com/pdf/" + doc._id + ".pdf",
+                  "content": "https://api.alsflowersmontgomery.com/pdf/" + doc._id + ".pdf",
                   "source": "api documentation!",
                   "options": {
                     "paper": "Legal",
                   }
                 }
-                var username = "S67hEzvCL_PbFZ2k_1UINbTAFzFLQ1zufwB9rwepYwk";
+                var username = "7qPBLc9mtxCwF1vc53b4c774OhS5CbRMZfoxN3jy78A";
                 var password = "";
                 var url = "https://api.printnode.com/printjobs";
                 var auth = "Basic " + new Buffer(username + ":" + password).toString("base64");
@@ -517,7 +517,7 @@ router.post('/new2/order', function(req, res, next) {
           'height': 2200
         }
             // console.log(doc._id)
-            webshot("https://admin-wildthings.devotestudio.com/order/pdf/" + doc._id, "./public/pdf/" + doc._id + ".pdf", options, function(err) {
+            webshot("https://admin.alsflowersmontgomery.com/order/pdf/" + doc._id, "./public/pdf/" + doc._id + ".pdf", options, function(err) {
               console.log(err)
               // setTimeout(function() {
               // 545151
@@ -525,13 +525,13 @@ router.post('/new2/order', function(req, res, next) {
                 "printer": 69910985,
                 "title": "Order: " + doc.order_number,
                 "contentType": "pdf_uri",
-                "content": "https://api-wildthings.devotestudio.com/pdf/" + doc._id + ".pdf",
+                "content": "https://api.alsflowersmontgomery.com/pdf/" + doc._id + ".pdf",
                 "source": "api documentation!",
                 "options": {
                   "paper": "Legal",
                 }
               }
-              var username = "S67hEzvCL_PbFZ2k_1UINbTAFzFLQ1zufwB9rwepYwk";
+              var username = "7qPBLc9mtxCwF1vc53b4c774OhS5CbRMZfoxN3jy78A";
               var password = "";
               var url = "https://api.printnode.com/printjobs";
               var auth = "Basic " + new Buffer(username + ":" + password).toString("base64");
@@ -618,7 +618,7 @@ router.get('/order/reprint/pdf/:id', isLoggedIn, function(req, res, next) {
           'height': 2200
         }
         console.log(doc._id)
-        webshot("admin-wildthings.devotestudio.com/order/pdf/" + doc._id, "./public/pdf/" + doc._id + ".pdf", options, function(err) {
+        webshot("admin.alsflowersmontgomery.com/order/pdf/" + doc._id, "./public/pdf/" + doc._id + ".pdf", options, function(err) {
           console.log(err)
           setTimeout(function() {
             // console.log(printer.printer_id)
@@ -627,13 +627,13 @@ router.get('/order/reprint/pdf/:id', isLoggedIn, function(req, res, next) {
               "printer": 69910985,
               "title": "Order: " + doc.order_number,
               "contentType": "pdf_uri",
-              "content": "https://api-wildthings.devotestudio.com/pdf/" + doc._id + ".pdf?t=" + Math.random(),
+              "content": "https://api.alsflowersmontgomery.com/pdf/" + doc._id + ".pdf?t=" + Math.random(),
               "source": "api documentation!",
               "options": {
                 "paper": "Legal",
               }
             }
-            var username = "S67hEzvCL_PbFZ2k_1UINbTAFzFLQ1zufwB9rwepYwk";
+            var username = "7qPBLc9mtxCwF1vc53b4c774OhS5CbRMZfoxN3jy78A";
             var password = "";
             var url = "https://api.printnode.com/printjobs";
             var auth = "Basic " + new Buffer(username + ":" + password).toString("base64");
@@ -874,9 +874,9 @@ router.post('/new/order', function(req, res, next) {
         console.log('SUBSCRIPTION CODE 1')
         var original_order = doc;
         console.log(doc.customer.id)
-        var username = "dfaae36a8dfe43777643418b1252f183";
-        var password = "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";
-        var url = "https://wild-things-bhm.myshopify.com/admin/api/2021-01/customers/" + doc.customer.id + "/orders.json?status=any";
+        var username = "4081512935093e026334dc4561b90ef6";
+        var password = "7a060446ac0dda5075ea628e2595ee39";
+        var url = "https://als-flowers.myshopify.com/admin/api/2021-01/customers/" + doc.customer.id + "/orders.json?status=any";
         var auth = "Basic " + new Buffer(username + ":" + password).toString("base64");
 
         request.get({
@@ -956,9 +956,9 @@ router.post('/new/order', function(req, res, next) {
                       "note_attributes": order.note_attributes
                     }
                   }
-                  var username2 = "dfaae36a8dfe43777643418b1252f183";
-                  var password2 = "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";
-                  var url2 = "https://wild-things-bhm.myshopify.com/admin/api/2021-01/orders/" + original_order.id + ".json";
+                  var username2 = "4081512935093e026334dc4561b90ef6";
+                  var password2 = "7a060446ac0dda5075ea628e2595ee39";
+                  var url2 = "https://als-flowers.myshopify.com/admin/api/2021-01/orders/" + original_order.id + ".json";
                   var auth2 = "Basic " + new Buffer(username2 + ":" + password2).toString("base64");
 
                   request.put({
@@ -1019,7 +1019,7 @@ router.post('/new/order', function(req, res, next) {
           'height': 2200
         }
                             // console.log(doc._id)
-                            webshot("https://admin-wildthings.devotestudio.com/order/pdf/" + doc._id, "./public/pdf/" + doc._id + ".pdf", options, function(err) {
+                            webshot("https://admin.alsflowersmontgomery.com/order/pdf/" + doc._id, "./public/pdf/" + doc._id + ".pdf", options, function(err) {
                               console.log(err)
                               // setTimeout(function() {
                               // 545151
@@ -1027,13 +1027,13 @@ router.post('/new/order', function(req, res, next) {
                                 "printer": 69910985,
                                 "title": "Order: " + doc.order_number,
                                 "contentType": "pdf_uri",
-                                "content": "https://api-wildthings.devotestudio.com/pdf/" + doc._id + ".pdf",
+                                "content": "https://api.alsflowersmontgomery.com/pdf/" + doc._id + ".pdf",
                                 "source": "api documentation!",
                                 "options": {
                                   "paper": "Legal",
                                 }
                               }
-                              var username = "S67hEzvCL_PbFZ2k_1UINbTAFzFLQ1zufwB9rwepYwk";
+                              var username = "7qPBLc9mtxCwF1vc53b4c774OhS5CbRMZfoxN3jy78A";
                               var password = "";
                               var url = "https://api.printnode.com/printjobs";
                               var auth = "Basic " + new Buffer(username + ":" + password).toString("base64");
@@ -1130,7 +1130,7 @@ router.post('/new/order', function(req, res, next) {
           'height': 2200
         }
             // console.log(doc._id)
-            webshot("https://admin-wildthings.devotestudio.com/order/pdf/" + doc._id, "./public/pdf/" + doc._id + ".pdf", options, function(err) {
+            webshot("https://admin.alsflowersmontgomery.com/order/pdf/" + doc._id, "./public/pdf/" + doc._id + ".pdf", options, function(err) {
               console.log(err)
               // setTimeout(function() {
               // 545151
@@ -1138,13 +1138,13 @@ router.post('/new/order', function(req, res, next) {
                 "printer": 69910985,
                 "title": "Order: " + doc.order_number,
                 "contentType": "pdf_uri",
-                "content": "https://api-wildthings.devotestudio.com/pdf/" + doc._id + ".pdf",
+                "content": "https://api.alsflowersmontgomery.com/pdf/" + doc._id + ".pdf",
                 "source": "api documentation!",
                 "options": {
                   "paper": "Legal",
                 }
               }
-              var username = "S67hEzvCL_PbFZ2k_1UINbTAFzFLQ1zufwB9rwepYwk";
+              var username = "7qPBLc9mtxCwF1vc53b4c774OhS5CbRMZfoxN3jy78A";
               var password = "";
               var url = "https://api.printnode.com/printjobs";
               var auth = "Basic " + new Buffer(username + ":" + password).toString("base64");
@@ -1205,9 +1205,9 @@ router.post('/new/order', function(req, res, next) {
           console.log('SUBSCRIPTION CODE 2')
           var original_order = doc;
           console.log(doc.customer.id)
-          var username = "dfaae36a8dfe43777643418b1252f183";
-          var password = "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";
-          var url = "https://wild-things-bhm.myshopify.com/admin/api/2021-01/customers/" + doc.customer.id + "/orders.json?status=any";
+          var username = "4081512935093e026334dc4561b90ef6";
+          var password = "7a060446ac0dda5075ea628e2595ee39";
+          var url = "https://als-flowers.myshopify.com/admin/api/2021-01/customers/" + doc.customer.id + "/orders.json?status=any";
           var auth = "Basic " + new Buffer(username + ":" + password).toString("base64");
 
           request.get({
@@ -1288,9 +1288,9 @@ router.post('/new/order', function(req, res, next) {
                         "note_attributes": order.note_attributes
                       }
                     }
-                    var username2 = "dfaae36a8dfe43777643418b1252f183";
-                    var password2 = "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";
-                    var url2 = "https://wild-things-bhm.myshopify.com/admin/api/2021-01/orders/" + original_order.id + ".json";
+                    var username2 = "4081512935093e026334dc4561b90ef6";
+                    var password2 = "7a060446ac0dda5075ea628e2595ee39";
+                    var url2 = "https://als-flowers.myshopify.com/admin/api/2021-01/orders/" + original_order.id + ".json";
                     var auth2 = "Basic " + new Buffer(username2 + ":" + password2).toString("base64");
 
                     request.put({
@@ -1351,7 +1351,7 @@ router.post('/new/order', function(req, res, next) {
           'height': 2200
         }
                               // console.log(doc._id)
-                              webshot("https://admin-wildthings.devotestudio.com/order/pdf/" + doc._id, "./public/pdf/" + doc._id + ".pdf", options, function(err) {
+                              webshot("https://admin.alsflowersmontgomery.com/order/pdf/" + doc._id, "./public/pdf/" + doc._id + ".pdf", options, function(err) {
                                 console.log(err)
                                 // setTimeout(function() {
                                 // 545151
@@ -1359,13 +1359,13 @@ router.post('/new/order', function(req, res, next) {
                                   "printer": 69910985,
                                   "title": "Order: " + doc.order_number,
                                   "contentType": "pdf_uri",
-                                  "content": "https://api-wildthings.devotestudio.com/pdf/" + doc._id + ".pdf",
+                                  "content": "https://api.alsflowersmontgomery.com/pdf/" + doc._id + ".pdf",
                                   "source": "api documentation!",
                                   "options": {
                                     "paper": "Legal",
                                   }
                                 }
-                                var username = "S67hEzvCL_PbFZ2k_1UINbTAFzFLQ1zufwB9rwepYwk";
+                                var username = "7qPBLc9mtxCwF1vc53b4c774OhS5CbRMZfoxN3jy78A";
                                 var password = "";
                                 var url = "https://api.printnode.com/printjobs";
                                 var auth = "Basic " + new Buffer(username + ":" + password).toString("base64");
@@ -1461,7 +1461,7 @@ router.post('/new/order', function(req, res, next) {
           'height': 2200
         }
               // console.log(doc._id)
-              webshot("https://admin-wildthings.devotestudio.com/order/pdf/" + doc._id, "./public/pdf/" + doc._id + ".pdf", options, function(err) {
+              webshot("https://admin.alsflowersmontgomery.com/order/pdf/" + doc._id, "./public/pdf/" + doc._id + ".pdf", options, function(err) {
                 console.log(err)
                 // setTimeout(function() {
                 // 545151
@@ -1469,13 +1469,13 @@ router.post('/new/order', function(req, res, next) {
                   "printer": 69910985,
                   "title": "Order: " + doc.order_number,
                   "contentType": "pdf_uri",
-                  "content": "https://api-wildthings.devotestudio.com/pdf/" + doc._id + ".pdf",
+                  "content": "https://api.alsflowersmontgomery.com/pdf/" + doc._id + ".pdf",
                   "source": "api documentation!",
                   "options": {
                     "paper": "Legal",
                   }
                 }
-                var username = "S67hEzvCL_PbFZ2k_1UINbTAFzFLQ1zufwB9rwepYwk";
+                var username = "7qPBLc9mtxCwF1vc53b4c774OhS5CbRMZfoxN3jy78A";
                 var password = "";
                 var url = "https://api.printnode.com/printjobs";
                 var auth = "Basic " + new Buffer(username + ":" + password).toString("base64");
@@ -1572,9 +1572,9 @@ router.post('/new3/order', function(req, res, next) {
         console.log('SUBSCRIPTION CODE 1')
         var original_order = doc;
         console.log(doc.customer.id)
-        var username = "dfaae36a8dfe43777643418b1252f183";
-        var password = "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";
-        var url = "https://wild-things-bhm.myshopify.com/admin/api/2021-01/customers/" + doc.customer.id + "/orders.json?status=any";
+        var username = "4081512935093e026334dc4561b90ef6";
+        var password = "7a060446ac0dda5075ea628e2595ee39";
+        var url = "https://als-flowers.myshopify.com/admin/api/2021-01/customers/" + doc.customer.id + "/orders.json?status=any";
         var auth = "Basic " + new Buffer(username + ":" + password).toString("base64");
 
         request.get({
@@ -1638,9 +1638,9 @@ router.post('/new3/order', function(req, res, next) {
                       "note_attributes": order.note_attributes
                     }
                   }
-                  var username2 = "dfaae36a8dfe43777643418b1252f183";
-                  var password2 = "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";
-                  var url2 = "https://wild-things-bhm.myshopify.com/admin/api/2021-01/orders/" + original_order.id + ".json";
+                  var username2 = "4081512935093e026334dc4561b90ef6";
+                  var password2 = "7a060446ac0dda5075ea628e2595ee39";
+                  var url2 = "https://als-flowers.myshopify.com/admin/api/2021-01/orders/" + original_order.id + ".json";
                   var auth2 = "Basic " + new Buffer(username2 + ":" + password2).toString("base64");
 
                   request.put({
@@ -1699,7 +1699,7 @@ router.post('/new3/order', function(req, res, next) {
                             //   'height': 2200
                             // }
                             // console.log(doc._id)
-                            // webshot("https://admin-wildthings.devotestudio.com/order/pdf/" + doc._id, "./public/pdf/" + doc._id + ".pdf", options, function(err) {
+                            // webshot("https://admin.alsflowersmontgomery.com/order/pdf/" + doc._id, "./public/pdf/" + doc._id + ".pdf", options, function(err) {
                             //   console.log(err)
                             //   // setTimeout(function() {
                             //   // 545151
@@ -1707,13 +1707,13 @@ router.post('/new3/order', function(req, res, next) {
                             //     "printer": 69910985,
                             //     "title": "Order: " + doc.order_number,
                             //     "contentType": "pdf_uri",
-                            //     "content": "https://api-wildthings.devotestudio.com/pdf/" + doc._id + ".pdf",
+                            //     "content": "https://api.alsflowersmontgomery.com/pdf/" + doc._id + ".pdf",
                             //     "source": "api documentation!",
                             //     "options": {
                             //       "paper": "Legal",
                             //     }
                             //   }
-                            //   var username = "S67hEzvCL_PbFZ2k_1UINbTAFzFLQ1zufwB9rwepYwk";
+                            //   var username = "7qPBLc9mtxCwF1vc53b4c774OhS5CbRMZfoxN3jy78A";
                             //   var password = "";
                             //   var url = "https://api.printnode.com/printjobs";
                             //   var auth = "Basic " + new Buffer(username + ":" + password).toString("base64");
@@ -1805,7 +1805,7 @@ router.post('/new3/order', function(req, res, next) {
             //   'height': 2200
             // }
             // // console.log(doc._id)
-            // webshot("https://admin-wildthings.devotestudio.com/order/pdf/" + doc._id, "./public/pdf/" + doc._id + ".pdf", options, function(err) {
+            // webshot("https://admin.alsflowersmontgomery.com/order/pdf/" + doc._id, "./public/pdf/" + doc._id + ".pdf", options, function(err) {
             //   console.log(err)
             //   // setTimeout(function() {
             //   // 545151
@@ -1813,13 +1813,13 @@ router.post('/new3/order', function(req, res, next) {
             //     "printer": 69910985,
             //     "title": "Order: " + doc.order_number,
             //     "contentType": "pdf_uri",
-            //     "content": "https://api-wildthings.devotestudio.com/pdf/" + doc._id + ".pdf",
+            //     "content": "https://api.alsflowersmontgomery.com/pdf/" + doc._id + ".pdf",
             //     "source": "api documentation!",
             //     "options": {
             //       "paper": "Legal",
             //     }
             //   }
-            //   var username = "S67hEzvCL_PbFZ2k_1UINbTAFzFLQ1zufwB9rwepYwk";
+            //   var username = "7qPBLc9mtxCwF1vc53b4c774OhS5CbRMZfoxN3jy78A";
             //   var password = "";
             //   var url = "https://api.printnode.com/printjobs";
             //   var auth = "Basic " + new Buffer(username + ":" + password).toString("base64");
@@ -1882,9 +1882,9 @@ router.post('/new3/order', function(req, res, next) {
           console.log('SUBSCRIPTION CODE 2')
           var original_order = doc;
           console.log(doc.customer.id)
-          var username = "dfaae36a8dfe43777643418b1252f183";
-          var password = "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";
-          var url = "https://wild-things-bhm.myshopify.com/admin/api/2021-01/customers/" + doc.customer.id + "/orders.json?status=any";
+          var username = "4081512935093e026334dc4561b90ef6";
+          var password = "7a060446ac0dda5075ea628e2595ee39";
+          var url = "https://als-flowers.myshopify.com/admin/api/2021-01/customers/" + doc.customer.id + "/orders.json?status=any";
           var auth = "Basic " + new Buffer(username + ":" + password).toString("base64");
 
           request.get({
@@ -1949,9 +1949,9 @@ router.post('/new3/order', function(req, res, next) {
                         "note_attributes": order.note_attributes
                       }
                     }
-                    var username2 = "dfaae36a8dfe43777643418b1252f183";
-                    var password2 = "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";
-                    var url2 = "https://wild-things-bhm.myshopify.com/admin/api/2021-01/orders/" + original_order.id + ".json";
+                    var username2 = "4081512935093e026334dc4561b90ef6";
+                    var password2 = "7a060446ac0dda5075ea628e2595ee39";
+                    var url2 = "https://als-flowers.myshopify.com/admin/api/2021-01/orders/" + original_order.id + ".json";
                     var auth2 = "Basic " + new Buffer(username2 + ":" + password2).toString("base64");
 
                     request.put({
@@ -2010,7 +2010,7 @@ router.post('/new3/order', function(req, res, next) {
                               //   'height': 2200
                               // }
                               // // console.log(doc._id)
-                              // webshot("https://admin-wildthings.devotestudio.com/order/pdf/" + doc._id, "./public/pdf/" + doc._id + ".pdf", options, function(err) {
+                              // webshot("https://admin.alsflowersmontgomery.com/order/pdf/" + doc._id, "./public/pdf/" + doc._id + ".pdf", options, function(err) {
                               //   console.log(err)
                               //   // setTimeout(function() {
                               //   // 545151
@@ -2018,13 +2018,13 @@ router.post('/new3/order', function(req, res, next) {
                               //     "printer": 69910985,
                               //     "title": "Order: " + doc.order_number,
                               //     "contentType": "pdf_uri",
-                              //     "content": "https://api-wildthings.devotestudio.com/pdf/" + doc._id + ".pdf",
+                              //     "content": "https://api.alsflowersmontgomery.com/pdf/" + doc._id + ".pdf",
                               //     "source": "api documentation!",
                               //     "options": {
                               //       "paper": "Legal",
                               //     }
                               //   }
-                              //   var username = "S67hEzvCL_PbFZ2k_1UINbTAFzFLQ1zufwB9rwepYwk";
+                              //   var username = "7qPBLc9mtxCwF1vc53b4c774OhS5CbRMZfoxN3jy78A";
                               //   var password = "";
                               //   var url = "https://api.printnode.com/printjobs";
                               //   var auth = "Basic " + new Buffer(username + ":" + password).toString("base64");
@@ -2116,7 +2116,7 @@ router.post('/new3/order', function(req, res, next) {
               //   'height': 2200
               // }
               // // console.log(doc._id)
-              // webshot("https://admin-wildthings.devotestudio.com/order/pdf/" + doc._id, "./public/pdf/" + doc._id + ".pdf", options, function(err) {
+              // webshot("https://admin.alsflowersmontgomery.com/order/pdf/" + doc._id, "./public/pdf/" + doc._id + ".pdf", options, function(err) {
               //   console.log(err)
               //   // setTimeout(function() {
               //   // 545151
@@ -2124,13 +2124,13 @@ router.post('/new3/order', function(req, res, next) {
               //     "printer": 69910985,
               //     "title": "Order: " + doc.order_number,
               //     "contentType": "pdf_uri",
-              //     "content": "https://api-wildthings.devotestudio.com/pdf/" + doc._id + ".pdf",
+              //     "content": "https://api.alsflowersmontgomery.com/pdf/" + doc._id + ".pdf",
               //     "source": "api documentation!",
               //     "options": {
               //       "paper": "Legal",
               //     }
               //   }
-              //   var username = "S67hEzvCL_PbFZ2k_1UINbTAFzFLQ1zufwB9rwepYwk";
+              //   var username = "7qPBLc9mtxCwF1vc53b4c774OhS5CbRMZfoxN3jy78A";
               //   var password = "";
               //   var url = "https://api.printnode.com/printjobs";
               //   var auth = "Basic " + new Buffer(username + ":" + password).toString("base64");

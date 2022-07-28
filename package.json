@@ -1,9 +1,9 @@
 {
-  "name": "wild-things-api",
+  "name": "als-flowers-api",
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./bin/wild-things-API"
+    "start": "node ./bin/als-flowers-api"
   },
   "dependencies": {
     "async": "^2.1.2",
