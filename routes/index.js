@@ -874,8 +874,8 @@ router.post('/new/order', function(req, res, next) {
         console.log('SUBSCRIPTION CODE 1')
         var original_order = doc;
         console.log(doc.customer.id)
-        var username = "4081512935093e026334dc4561b90ef6";
-        var password = "7a060446ac0dda5075ea628e2595ee39";
+        var username = "36274b5cf78a52bfa4c6780ba48a2fb1";
+        var password = "a26e549d188fe3459e1ed5b1c2cb1425";
         var url = "https://als-flowers.myshopify.com/admin/api/2021-01/customers/" + doc.customer.id + "/orders.json?status=any";
         var auth = "Basic " + new Buffer(username + ":" + password).toString("base64");
 
@@ -956,8 +956,8 @@ router.post('/new/order', function(req, res, next) {
                       "note_attributes": order.note_attributes
                     }
                   }
-                  var username2 = "4081512935093e026334dc4561b90ef6";
-                  var password2 = "7a060446ac0dda5075ea628e2595ee39";
+                  var username2 = "36274b5cf78a52bfa4c6780ba48a2fb1";
+                  var password2 = "a26e549d188fe3459e1ed5b1c2cb1425";
                   var url2 = "https://als-flowers.myshopify.com/admin/api/2021-01/orders/" + original_order.id + ".json";
                   var auth2 = "Basic " + new Buffer(username2 + ":" + password2).toString("base64");
 
@@ -1205,8 +1205,8 @@ router.post('/new/order', function(req, res, next) {
           console.log('SUBSCRIPTION CODE 2')
           var original_order = doc;
           console.log(doc.customer.id)
-          var username = "4081512935093e026334dc4561b90ef6";
-          var password = "7a060446ac0dda5075ea628e2595ee39";
+          var username = "36274b5cf78a52bfa4c6780ba48a2fb1";
+          var password = "a26e549d188fe3459e1ed5b1c2cb1425";
           var url = "https://als-flowers.myshopify.com/admin/api/2021-01/customers/" + doc.customer.id + "/orders.json?status=any";
           var auth = "Basic " + new Buffer(username + ":" + password).toString("base64");
 
@@ -1288,8 +1288,8 @@ router.post('/new/order', function(req, res, next) {
                         "note_attributes": order.note_attributes
                       }
                     }
-                    var username2 = "4081512935093e026334dc4561b90ef6";
-                    var password2 = "7a060446ac0dda5075ea628e2595ee39";
+                    var username2 = "36274b5cf78a52bfa4c6780ba48a2fb1";
+                    var password2 = "a26e549d188fe3459e1ed5b1c2cb1425";
                     var url2 = "https://als-flowers.myshopify.com/admin/api/2021-01/orders/" + original_order.id + ".json";
                     var auth2 = "Basic " + new Buffer(username2 + ":" + password2).toString("base64");
 
@@ -1572,8 +1572,8 @@ router.post('/new3/order', function(req, res, next) {
         console.log('SUBSCRIPTION CODE 1')
         var original_order = doc;
         console.log(doc.customer.id)
-        var username = "4081512935093e026334dc4561b90ef6";
-        var password = "7a060446ac0dda5075ea628e2595ee39";
+        var username = "36274b5cf78a52bfa4c6780ba48a2fb1";
+        var password = "a26e549d188fe3459e1ed5b1c2cb1425";
         var url = "https://als-flowers.myshopify.com/admin/api/2021-01/customers/" + doc.customer.id + "/orders.json?status=any";
         var auth = "Basic " + new Buffer(username + ":" + password).toString("base64");
 
@@ -1638,8 +1638,8 @@ router.post('/new3/order', function(req, res, next) {
                       "note_attributes": order.note_attributes
                     }
                   }
-                  var username2 = "4081512935093e026334dc4561b90ef6";
-                  var password2 = "7a060446ac0dda5075ea628e2595ee39";
+                  var username2 = "36274b5cf78a52bfa4c6780ba48a2fb1";
+                  var password2 = "a26e549d188fe3459e1ed5b1c2cb1425";
                   var url2 = "https://als-flowers.myshopify.com/admin/api/2021-01/orders/" + original_order.id + ".json";
                   var auth2 = "Basic " + new Buffer(username2 + ":" + password2).toString("base64");
 
@@ -1882,8 +1882,8 @@ router.post('/new3/order', function(req, res, next) {
           console.log('SUBSCRIPTION CODE 2')
           var original_order = doc;
           console.log(doc.customer.id)
-          var username = "4081512935093e026334dc4561b90ef6";
-          var password = "7a060446ac0dda5075ea628e2595ee39";
+          var username = "36274b5cf78a52bfa4c6780ba48a2fb1";
+          var password = "a26e549d188fe3459e1ed5b1c2cb1425";
           var url = "https://als-flowers.myshopify.com/admin/api/2021-01/customers/" + doc.customer.id + "/orders.json?status=any";
           var auth = "Basic " + new Buffer(username + ":" + password).toString("base64");
 
@@ -1949,8 +1949,8 @@ router.post('/new3/order', function(req, res, next) {
                         "note_attributes": order.note_attributes
                       }
                     }
-                    var username2 = "4081512935093e026334dc4561b90ef6";
-                    var password2 = "7a060446ac0dda5075ea628e2595ee39";
+                    var username2 = "36274b5cf78a52bfa4c6780ba48a2fb1";
+                    var password2 = "a26e549d188fe3459e1ed5b1c2cb1425";
                     var url2 = "https://als-flowers.myshopify.com/admin/api/2021-01/orders/" + original_order.id + ".json";
                     var auth2 = "Basic " + new Buffer(username2 + ":" + password2).toString("base64");
 
