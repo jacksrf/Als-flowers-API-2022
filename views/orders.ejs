@@ -121,7 +121,7 @@ text-align: center;
           <div class="item total">$<%= orders[i].total_price_usd %></div>
           <!-- <button class="item button btn btn-info"><a href="">EDIT</a></button> -->
           <button class="item button btn btn-success"><a href="/order/reprint/pdf/<%= orders[i]._id %>?key=<%= Math.random() %>">PRINT</a></button>
-          <button class="item button btn btn-warning"><a href="https://admin.alsflowersmontgomery.comorder/pdf/<%= orders[i]._id %>" target="_blank">PDF</a></button>
+          <button class="item button btn btn-warning"><a href="https://admin.alsflowersmontgomery.com/order/pdf/<%= orders[i]._id %>" target="_blank">PDF</a></button>
           <button class="item button btn btn-danger"><a href="/order/json/<%= orders[i]._id %>">JSON</a></button>
           <div class="item name" style="width: 300px; padding-left: 10px;">Updated: <%= moment(orders[i].updated_at).startOf('min').fromNow(); %></div>
         </div>

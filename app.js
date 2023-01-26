@@ -4,8 +4,8 @@ var express = require('express');
 var path = require('path');
 
 var mongoose = require('mongoose');
-mongoose.set('useNewUrlParser', true);
-mongoose.set('useUnifiedTopology', true);
+// mongoose.set('useNewUrlParser', true);
+// mongoose.set('useUnifiedTopology', true);
 var passport = require('passport');
 var flash = require('connect-flash');
 var timeout = require('connect-timeout'); //express v4

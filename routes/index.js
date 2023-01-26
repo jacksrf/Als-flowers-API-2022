@@ -1,13 +1,13 @@
 var express = require('express');
 var router = express.Router();
-var rest = require('restler');
+// var rest = require('restler');
 var fs = require('fs');
-var pdf = require('html-pdf');
+// var pdf = require('html-pdf');
 var request = require('request');
 // var jsPDF = require('jspdf');
-var cheerio = require('cheerio')
-var htmlToImage = require('html-to-image');
-var webshot = require('webshot');
+// var cheerio = require('cheerio')
+// var htmlToImage = require('html-to-image');
+var webshot = require('webshot-node');
 var moment = require('moment');
 var nl2br = require('nl2br');
 
@@ -18,7 +18,7 @@ var passport = require('passport');
 var express = require('express');
 var router = express.Router();
 var mongo = require('mongodb')
-var fetch = require("node-fetch");
+// var fetch = require("node-fetch");
 
 router.use(function(req, res, next) {
   next();
@@ -610,7 +610,7 @@ router.get('/order/reprint/pdf/:id', isLoggedIn, function(req, res, next) {
             'width': 1350,
             'height': 2200
           },
-          phantomPath: require('phantomjs2').path,
+          // phantomPath: require('phantomjs2').path,
           phantomConfig: { 'ignore-ssl-errors': 'true'}
         }
         var options2 = {
@@ -620,6 +620,7 @@ router.get('/order/reprint/pdf/:id', isLoggedIn, function(req, res, next) {
         console.log(doc._id)
         webshot("admin.alsflowersmontgomery.com/order/pdf/" + doc._id, "./public/pdf/" + doc._id + ".pdf", options, function(err) {
           console.log(err)
+
           setTimeout(function() {
             // console.log(printer.printer_id)
             var formData = {
