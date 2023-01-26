@@ -460,6 +460,13 @@ router.post('/new2/order', function(req, res, next) {
                       // console.log(response)
                       console.log(moment().format('MMMM Do YYYY, h:mm a'));
                       console.log('NEW ORDER#:' + doc.order_number)
+                      fs.unlink("./public/pdf/" + doc._id + ".pdf", (err) => {
+                          if (err) {
+                              throw err;
+                          }
+
+                          console.log("Delete File successfully.");
+                      });
                       // setTimeout(function() {
                       res.end();
                       // }, 1000)
@@ -554,6 +561,13 @@ router.post('/new2/order', function(req, res, next) {
                     // console.log(response)
                     console.log(moment().format('MMMM Do YYYY, h:mm a'));
                     console.log('NEW ORDER#:' + doc.order_number)
+                    fs.unlink("./public/pdf/" + doc._id + ".pdf", (err) => {
+                        if (err) {
+                            throw err;
+                        }
+
+                        console.log("Delete File successfully.");
+                    });
                     // setTimeout(function() {
                     res.end();
                     // }, 1000)
@@ -660,6 +674,13 @@ router.get('/order/reprint/pdf/:id', isLoggedIn, function(req, res, next) {
                   console.log('REPRINT')
                   console.log(moment().format('MMMM Do YYYY, h:mm a'));
                   console.log('REPRINTED ------ ORDER#:' + doc.order_number)
+                  fs.unlink("./public/pdf/" + doc._id + ".pdf", (err) => {
+                      if (err) {
+                          throw err;
+                      }
+
+                      console.log("Delete File successfully.");
+                  });
                   res.render('index', {
                     "message": "COMPLETED! YOURE PRINT SHOULD BECOMING SOON."
                   })
@@ -1057,6 +1078,13 @@ router.post('/new/order', function(req, res, next) {
                                     // console.log(response)
                                     console.log(moment().format('MMMM Do YYYY, h:mm a'));
                                     console.log('NEW ORDER#:' + doc.order_number)
+                                    fs.unlink("./public/pdf/" + doc._id + ".pdf", (err) => {
+                                        if (err) {
+                                            throw err;
+                                        }
+
+                                        console.log("Delete File successfully.");
+                                    });
                                     // setTimeout(function() {
                                     res.end();
                                     // }, 1000)
@@ -1168,6 +1196,13 @@ router.post('/new/order', function(req, res, next) {
                     // console.log(response)
                     console.log(moment().format('MMMM Do YYYY, h:mm a'));
                     console.log('NEW ORDER#:' + doc.order_number)
+                    fs.unlink("./public/pdf/" + doc._id + ".pdf", (err) => {
+                        if (err) {
+                            throw err;
+                        }
+
+                        console.log("Delete File successfully.");
+                    });
                     // setTimeout(function() {
                     res.end();
                     // }, 1000)
@@ -1389,6 +1424,13 @@ router.post('/new/order', function(req, res, next) {
                                       // console.log(response)
                                       console.log(moment().format('MMMM Do YYYY, h:mm a'));
                                       console.log('NEW ORDER#:' + doc.order_number)
+                                      fs.unlink("./public/pdf/" + doc._id + ".pdf", (err) => {
+                                          if (err) {
+                                              throw err;
+                                          }
+
+                                          console.log("Delete File successfully.");
+                                      });
                                       // setTimeout(function() {
                                       res.end();
                                       // }, 1000)
@@ -1499,6 +1541,13 @@ router.post('/new/order', function(req, res, next) {
                       // console.log(response)
                       console.log(moment().format('MMMM Do YYYY, h:mm a'));
                       console.log('NEW ORDER#:' + doc.order_number)
+                      fs.unlink("./public/pdf/" + doc._id + ".pdf", (err) => {
+                          if (err) {
+                              throw err;
+                          }
+
+                          console.log("Delete File successfully.");
+                      });
                       // setTimeout(function() {
                       res.end();
                       // }, 1000)
