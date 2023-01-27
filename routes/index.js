@@ -169,14 +169,82 @@ router.get('/orders/today', isLoggedIn, function(req, res, next) {
       orders[j].deliver_day = "";
       orders[j].orderNotes = {};
       if (orders[j].note_attributes && orders[j].customer != undefined) {
-        console.log(orders[j].customer)
-        console.log(orders[j].name)
+        // console.log(orders[j].customer)
+        // console.log(orders[j].name)
         for (i = 0; i < orders[j].note_attributes.length; i++) {
           var key = orders[j].note_attributes[i].name.replace(/ /g, "_").replace(/-/g, "_").toLowerCase();
           var value = orders[j].note_attributes[i].value.toString();
           orders[j].orderNotes[key] = value;
           if (i === orders[j].note_attributes.length - 1) {
-            // console.log(orders[j].orderNotes)
+            // // console.log(orders[j].orderNotes)
+            // // console.log(orders[j].orderNotes.delivery_date)
+            // // console.log(today)
+            if (orders[j].orderNotes.checkout_method === 'delivery') {
+              if (orders[j].orderNotes.delivery_date) {
+                var delivery_date_clean = orders[j].orderNotes.delivery_date.replace(/-/g, "/")
+                if (delivery_date_clean === today) {
+                  // // console.log(orders[j].name)
+                  todaysOrders.push(orders[j])
+                }
+              }
+            }
+
+            if (orders[j].orderNotes.checkout_method === 'pickup') {
+              if (orders[j].orderNotes.pickup_date) {
+                var pickup_date_clean = orders[j].orderNotes.pickup_date.replace(/-/g, "/")
+                if (pickup_date_clean === today) {
+                  // // console.log(orders[j].name)
+                  todaysOrders.push(orders[j])
+                }
+              }
+            }
+          }
+        }
+      }
+      if (j === orders.length - 1) {
+        // var todaysOrdersSet = new Set(todaysOrders);
+        var todaysOrdersClean = Array.from(new Set(todaysOrders.map(a => a.id)))
+          .map(id => {
+            return todaysOrders.find(a => a.id === id)
+          })
+        res.render('orders-today', {
+          orders: todaysOrdersClean
+        })
+      }
+    }
+
+  })
+});
+
+router.get('/orders/tomorrow', isLoggedIn, function(req, res, next) {
+  var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+  // console.log(ip)
+  // console.log(req)
+  var db = req.db;
+  var today = moment().add(1, 'days').format('YYYY/MM/DD').toString()
+  // var today = '2020/12/23'
+  // console.log(today)
+  var ordersDB = db.get('orders')
+  var todaysOrders = [];
+  ordersDB.find({}, {
+    limit: 2000,
+    sort: {
+      _id: -1
+    }
+  }, function(err, orders) {
+    console.log(err)
+    // // console.log(orders)
+    for (j = 0; j < orders.length; j++) {
+      orders[j].deliver_day = "";
+      orders[j].orderNotes = {};
+      if (orders[j].note_attributes && orders[j].customer) {
+        // console.log(orders[j].customer)
+        for (i = 0; i < orders[j].note_attributes.length; i++) {
+          var key = orders[j].note_attributes[i].name.replace(/ /g, "_").replace(/-/g, "_").toLowerCase();
+          var value = orders[j].note_attributes[i].value.toString();
+          orders[j].orderNotes[key] = value;
+          if (i === orders[j].note_attributes.length - 1) {
+            // // console.log(orders[j].orderNotes)
             // console.log(orders[j].orderNotes.delivery_date)
             // console.log(today)
             if (orders[j].orderNotes.checkout_method === 'delivery') {
@@ -207,74 +275,6 @@ router.get('/orders/today', isLoggedIn, function(req, res, next) {
           .map(id => {
             return todaysOrders.find(a => a.id === id)
           })
-        res.render('orders-today', {
-          orders: todaysOrdersClean
-        })
-      }
-    }
-
-  })
-});
-
-router.get('/orders/tomorrow', isLoggedIn, function(req, res, next) {
-  var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-  console.log(ip)
-  console.log(req)
-  var db = req.db;
-  var today = moment().add(1, 'days').format('YYYY/MM/DD').toString()
-  // var today = '2020/12/23'
-  console.log(today)
-  var ordersDB = db.get('orders')
-  var todaysOrders = [];
-  ordersDB.find({}, {
-    limit: 2000,
-    sort: {
-      _id: -1
-    }
-  }, function(err, orders) {
-    console.log(err)
-    // console.log(orders)
-    for (j = 0; j < orders.length; j++) {
-      orders[j].deliver_day = "";
-      orders[j].orderNotes = {};
-      if (orders[j].note_attributes && orders[j].customer) {
-        console.log(orders[j].customer)
-        for (i = 0; i < orders[j].note_attributes.length; i++) {
-          var key = orders[j].note_attributes[i].name.replace(/ /g, "_").replace(/-/g, "_").toLowerCase();
-          var value = orders[j].note_attributes[i].value.toString();
-          orders[j].orderNotes[key] = value;
-          if (i === orders[j].note_attributes.length - 1) {
-            // console.log(orders[j].orderNotes)
-            console.log(orders[j].orderNotes.delivery_date)
-            console.log(today)
-            if (orders[j].orderNotes.checkout_method === 'delivery') {
-              if (orders[j].orderNotes.delivery_date) {
-                var delivery_date_clean = orders[j].orderNotes.delivery_date.replace(/-/g, "/")
-                if (delivery_date_clean === today) {
-                  console.log(orders[j].name)
-                  todaysOrders.push(orders[j])
-                }
-              }
-            }
-
-            if (orders[j].orderNotes.checkout_method === 'pickup') {
-              if (orders[j].orderNotes.pickup_date) {
-                var pickup_date_clean = orders[j].orderNotes.pickup_date.replace(/-/g, "/")
-                if (pickup_date_clean === today) {
-                  console.log(orders[j].name)
-                  todaysOrders.push(orders[j])
-                }
-              }
-            }
-          }
-        }
-      }
-      if (j === orders.length - 1) {
-        // var todaysOrdersSet = new Set(todaysOrders);
-        var todaysOrdersClean = Array.from(new Set(todaysOrders.map(a => a.id)))
-          .map(id => {
-            return todaysOrders.find(a => a.id === id)
-          })
         res.render('orders-tomorrow', {
           orders: todaysOrdersClean
         })
@@ -286,7 +286,7 @@ router.get('/orders/tomorrow', isLoggedIn, function(req, res, next) {
 
 router.post('/orders/search', isLoggedIn, function(req, res, next) {
   var order = req.body.order;
-  console.log(order)
+  // console.log(order)
   var order_number = '#' + order;
   var db = req.db;
   var ordersDB = db.get('orders')
@@ -346,13 +346,13 @@ router.get('/subscriptions', function(req, res, next) {
   ordersDB.find({
     "source_name": 'subscription_contract'
   }, {}, function(err, docs) {
-    console.log(docs.length)
+    // console.log(docs.length)
     var ordersClean = Array.from(new Set(docs.map(a => a.id)))
       .map(id => {
         return docs.find(a => a.id === id)
       })
     for (i = 0; i < ordersClean.length; i++) {
-      console.log(ordersClean[i].name)
+      // console.log(ordersClean[i].name)
     }
     res.send()
   })
@@ -367,19 +367,19 @@ router.post('/new2/order', function(req, res, next) {
   }, {}, function(err, doc) {
     console.log('*/-----------NEW ORDER------------/*')
     console.log(err)
-    console.log(doc)
+    // console.log(doc)
     if (doc) {
       var db = req.db;
       var ordersDB = db.get('orders')
       // ordersDB.insert(req.body)
-      // console.log(req.body)
+      // // console.log(req.body)
       var items = req.body.line_items;
 
       // ordersDB.findOne({
       //   "id": req.body.id
       ordersDB.insert(req.body, function(err, doc) {
         doc.note = nl2br(doc.note);
-        // console.log(doc.note);
+        // // console.log(doc.note);
         doc.deliver_day = "";
         if (doc.user_id) {
 
@@ -393,11 +393,11 @@ router.post('/new2/order', function(req, res, next) {
           var value = doc.note_attributes[i].value.toString();
           doc.orderNotes[key] = value;
           if (i === doc.note_attributes.length - 1) {
-            // console.log(doc.orderNotes)
+            // // console.log(doc.orderNotes)
           }
         }
         if (doc.orderNotes.checkout_method === "delivery" || doc.orderNotes.checkout_method === 'pickup') {
-          // console.log(doc)
+          // // console.log(doc)
           if (doc.orderNotes.checkout_method === "delivery") {
 
           }
@@ -407,7 +407,7 @@ router.post('/new2/order', function(req, res, next) {
           }
           var printerDB = db.get('printer')
           printerDB.findOne({}, {}, function(err, printer) {
-            // console.log(printer.printer_id)
+            // // console.log(printer.printer_id)
             if (doc.note_attributes[1] != undefined) {
 
               var options = {
@@ -415,14 +415,14 @@ router.post('/new2/order', function(req, res, next) {
             'width': 1350,
             'height': 2200
           },
-          phantomPath: require('phantomjs2').path,
+          // phantomPath: require('phantomjs2').path,
           phantomConfig: { 'ignore-ssl-errors': 'true'}
         }
         var options2 = {
           'width': 1350,
           'height': 2200
         }
-              // console.log(doc._id)
+              // // console.log(doc._id)
               webshot("https://admin.alsflowersmontgomery.com/order/pdf/" + doc._id, "./public/pdf/" + doc._id + ".pdf", options, function(err) {
                 console.log(err)
                 // setTimeout(function() {
@@ -516,8 +516,8 @@ router.post('/new2/order', function(req, res, next) {
             'width': 1350,
             'height': 2200
           },
-          phantomPath: require('phantomjs2').path,
-          phantomConfig: { 'ignore-ssl-errors': 'true'}
+          // phantomPath: require('phantomjs2').path,
+          Config: { 'ignore-ssl-errors': 'true'}
         }
         var options2 = {
           'width': 1350,
@@ -609,15 +609,15 @@ router.get('/order/reprint/pdf/:id', isLoggedIn, function(req, res, next) {
     if (err) {
       console.log(err)
     }
-    console.log(doc)
+    // console.log(doc)
     var printerDB = db.get('printer')
     printerDB.findOne({}, {}, function(err, printer) {
-      console.log(doc.updated_at)
+      // console.log(doc.updated_at)
       var isafter = moment(doc.updated_at).isAfter('2018-06-01T00:00:00+00:00');
-      console.log(isafter)
+      // console.log(isafter)
       // console.log(doc.note_attributes)
       // if (isafter === "true" || isafter === true) {
-      console.log(doc.note_attributes)
+      // console.log(doc.note_attributes)
       if (doc.note_attributes[1] != undefined) {
         var options = {
           screenSize: {
@@ -631,7 +631,7 @@ router.get('/order/reprint/pdf/:id', isLoggedIn, function(req, res, next) {
           'width': 1350,
           'height': 2200
         }
-        console.log(doc._id)
+        // console.log(doc._id)
         webshot("admin.alsflowersmontgomery.com/order/pdf/" + doc._id, "./public/pdf/" + doc._id + ".pdf", options, function(err) {
           console.log(err)
 
@@ -662,8 +662,8 @@ router.get('/order/reprint/pdf/:id', isLoggedIn, function(req, res, next) {
                 body: formData
               },
               function(error, response, body) {
-                console.log(response.headers.date)
-                console.log(body)
+                // console.log(response.headers.date)
+                // console.log(body)
                 if (error) {
                   console.log(error)
                   res.send('index', {
@@ -722,7 +722,7 @@ router.post('/order/update', function(req, res, next) {
   var db = req.db;
   var ordersDB = db.get('orders')
   var order_number = req.body.name;
-  console.log(order_number)
+  // console.log(order_number)
   ordersDB.findOneAndUpdate({
     "name": order_number
   }, {
@@ -752,14 +752,14 @@ router.get('/order/edit/:id', isLoggedIn, multipartMiddleware, function(req, res
 
   var id = req.params.id;
   // var filename  = './'+ id +'.pdf';
-  console.log(id);
+  // console.log(id);
   var db = req.db;
   var ordersDB = db.get('orders')
   ordersDB.findOne({
     "_id": id
   }, {}, function(err, doc) {
-    console.log(doc.note)
-    console.log(doc.note_attributes.length);
+    // console.log(doc.note)
+    // console.log(doc.note_attributes.length);
     // console.log(doc)
     res.render('order-edit', {
       "order": doc
@@ -769,18 +769,18 @@ router.get('/order/edit/:id', isLoggedIn, multipartMiddleware, function(req, res
 })
 //
 router.post('/order/edit/:id', isLoggedIn, multipartMiddleware, function(req, res, next) {
-  console.log(req.body)
+  // console.log(req.body)
   var id = req.params.id;
   // // var filename  = './'+ id +'.pdf';
   var form = req.body.note_attributes
-  console.log(id);
+  // console.log(id);
   // console.log(form)
   var newNoteAttributes = [];
   var newNote = ''
 
   function callback() {
     console.log('all done');
-    console.log(newNoteAttributes)
+    // console.log(newNoteAttributes)
     var db = req.db;
     var ordersDB = db.get('orders')
     ordersDB.update({
@@ -799,7 +799,7 @@ router.post('/order/edit/:id', isLoggedIn, multipartMiddleware, function(req, re
   var itemsProcessed = 0;
   Object.entries(form).forEach(
     ([key, value]) => {
-      console.log(key, value)
+      // console.log(key, value)
       if (key === 'note') {
         newNote = value
         console.log("note: " + newNote)
@@ -812,7 +812,7 @@ router.post('/order/edit/:id', isLoggedIn, multipartMiddleware, function(req, re
           name: key,
           value: value
         }
-        console.log(item)
+        // console.log(item)
         newNoteAttributes.push(item)
         itemsProcessed++;
         if (itemsProcessed === Object.entries(form).length) {
@@ -829,13 +829,13 @@ router.get('/order/save/confirmation/:id', isLoggedIn, multipartMiddleware, func
 
   var id = req.params.id;
   // var filename  = './'+ id +'.pdf';
-  console.log(id);
+  // console.log(id);
   var db = req.db;
   var ordersDB = db.get('orders')
   ordersDB.findOne({
     "_id": id
   }, {}, function(err, doc) {
-    console.log(doc.note_attributes)
+    // console.log(doc.note_attributes)
     res.render('order-save', {
       "order": doc
     })
@@ -848,7 +848,7 @@ router.post('/order/pdf/save/:id', multipartMiddleware, function(req, res, next)
 
   var id = req.params.id;
   var filename = './' + id + '.pdf';
-  console.log(id);
+  // console.log(id);
   var db = req.db;
   var file = req.body
   // console.log(file)
@@ -864,7 +864,7 @@ router.post('/order/pdf/save/:id', multipartMiddleware, function(req, res, next)
 router.get('/order/delete/:id', multipartMiddleware, function(req, res, next) {
 
   var id = req.params.id;
-  console.log(id);
+  // console.log(id);
   var db = req.db;
   var ordersDB = db.get('orders')
   ordersDB.remove({
@@ -895,7 +895,7 @@ router.post('/new/order', function(req, res, next) {
       if (doc.source_name === 'subscription_contract') {
         console.log('SUBSCRIPTION CODE 1')
         var original_order = doc;
-        console.log(doc.customer.id)
+        // console.log(doc.customer.id)
         var username = "36274b5cf78a52bfa4c6780ba48a2fb1";
         var password = "a26e549d188fe3459e1ed5b1c2cb1425";
         var url = "https://als-flowers.myshopify.com/admin/api/2021-01/customers/" + doc.customer.id + "/orders.json?status=any";
@@ -909,7 +909,7 @@ router.post('/new/order', function(req, res, next) {
           },
           function(error, response, body) {
             // console.log(response.headers.date)
-            console.log(body)
+            // console.log(body)
             if (error) {
               console.log(error)
               res.send('index', {
@@ -928,7 +928,7 @@ router.post('/new/order', function(req, res, next) {
                   found = true;
                   var today = moment().format('YYYY/MM/DD')
                   var current_day_of_week = moment().weekday();
-                  console.log(current_day_of_week)
+                  // console.log(current_day_of_week)
                   var today_tag;
                   var today_tag_plusthree;
                   if (current_day_of_week === 7) {
@@ -940,13 +940,13 @@ router.post('/new/order', function(req, res, next) {
                   }
                   var order_tags = order.tags.split(',').slice(1);
                   console.log('OLD TAGS: ' + order_tags)
-                  console.log(order.note_attributes)
-                  console.log(order.tags)
-                  console.log(original_order.id)
+                  // console.log(order.note_attributes)
+                  // console.log(order.tags)
+                  // console.log(original_order.id)
 
                   var dateIndex = order.note_attributes.findIndex(x => x.name === 'Delivery-Date');
                   var dateIndex2 = order.note_attributes.findIndex(x => x.name === 'Pickup-Date');
-                  console.log(dateIndex)
+                  // console.log(dateIndex)
                   if (dateIndex > -1) {
                     order.note_attributes[dateIndex] = {
                       "name": 'Delivery-Date',
@@ -966,7 +966,7 @@ router.post('/new/order', function(req, res, next) {
                   order_tags.push(subscription_tag2)
                   // order_tags.join()
                   var new_tags = order_tags.join()
-                  console.log(new_tags)
+                  // console.log(new_tags)
                   console.log('NEW TAGS: ' + new_tags)
                   console.log('TODAY: ' + today)
 
@@ -1033,7 +1033,7 @@ router.post('/new/order', function(req, res, next) {
             'width': 1350,
             'height': 2200
           },
-          phantomPath: require('phantomjs2').path,
+          // phantomPath: require('phantomjs2').path,
           phantomConfig: { 'ignore-ssl-errors': 'true'}
         }
         var options2 = {
@@ -1151,7 +1151,7 @@ router.post('/new/order', function(req, res, next) {
             'width': 1350,
             'height': 2200
           },
-          phantomPath: require('phantomjs2').path,
+          // phantomPath: require('phantomjs2').path,
           phantomConfig: { 'ignore-ssl-errors': 'true'}
         }
         var options2 = {
@@ -1240,7 +1240,7 @@ router.post('/new/order', function(req, res, next) {
         if (doc.source_name === 'subscription_contract') {
           console.log('SUBSCRIPTION CODE 2')
           var original_order = doc;
-          console.log(doc.customer.id)
+          // console.log(doc.customer.id)
           var username = "36274b5cf78a52bfa4c6780ba48a2fb1";
           var password = "a26e549d188fe3459e1ed5b1c2cb1425";
           var url = "https://als-flowers.myshopify.com/admin/api/2021-01/customers/" + doc.customer.id + "/orders.json?status=any";
@@ -1273,7 +1273,7 @@ router.post('/new/order', function(req, res, next) {
                     found = true;
                     var today = moment().format('YYYY/MM/DD')
                     var current_day_of_week = moment().weekday();
-                    console.log(current_day_of_week)
+                    // console.log(current_day_of_week)
                     var today_tag;
                     var today_tag_plusthree;
                     if (current_day_of_week === 7) {
@@ -1286,13 +1286,13 @@ router.post('/new/order', function(req, res, next) {
                     var order_tags = order.tags.split(',').slice(1);
 
                     console.log('OLD TAGS: ' + order_tags)
-                    console.log(order.note_attributes)
-                    console.log(order.tags)
-                    console.log(original_order.id)
+                    // console.log(order.note_attributes)
+                    // console.log(order.tags)
+                    // console.log(original_order.id)
 
                     var dateIndex = order.note_attributes.findIndex(x => x.name === 'Delivery-Date');
                     var dateIndex2 = order.note_attributes.findIndex(x => x.name === 'Pickup-Date');
-                    console.log(dateIndex)
+                    // console.log(dateIndex)
                     if (dateIndex > -1) {
                       order.note_attributes[dateIndex] = {
                         "name": 'Delivery-Date',
@@ -1312,7 +1312,7 @@ router.post('/new/order', function(req, res, next) {
                     order_tags.push(subscription_tag2)
                     // order_tags.join()
                     var new_tags = order_tags.join()
-                    console.log(new_tags)
+                    // console.log(new_tags)
                     console.log('NEW TAGS: ' + new_tags)
                     console.log('TODAY: ' + today)
 
@@ -1379,7 +1379,7 @@ router.post('/new/order', function(req, res, next) {
             'width': 1350,
             'height': 2200
           },
-          phantomPath: require('phantomjs2').path,
+          // phantomPath: require('phantomjs2').path,
           phantomConfig: { 'ignore-ssl-errors': 'true'}
         }
         var options2 = {
@@ -1496,7 +1496,7 @@ router.post('/new/order', function(req, res, next) {
             'width': 1350,
             'height': 2200
           },
-          phantomPath: require('phantomjs2').path,
+          // phantomPath: require('phantomjs2').path,
           phantomConfig: { 'ignore-ssl-errors': 'true'}
         }
         var options2 = {
@@ -1621,7 +1621,7 @@ router.post('/new3/order', function(req, res, next) {
       if (doc.source_name === 'subscription_contract') {
         console.log('SUBSCRIPTION CODE 1')
         var original_order = doc;
-        console.log(doc.customer.id)
+        // console.log(doc.customer.id)
         var username = "36274b5cf78a52bfa4c6780ba48a2fb1";
         var password = "a26e549d188fe3459e1ed5b1c2cb1425";
         var url = "https://als-flowers.myshopify.com/admin/api/2021-01/customers/" + doc.customer.id + "/orders.json?status=any";
@@ -1635,7 +1635,7 @@ router.post('/new3/order', function(req, res, next) {
           },
           function(error, response, body) {
             // console.log(response.headers.date)
-            console.log(body)
+            // console.log(body)
             if (error) {
               console.log(error)
               res.send('index', {
@@ -1665,8 +1665,8 @@ router.post('/new3/order', function(req, res, next) {
                   console.log('TODAY: ' + today)
                   var dateIndex = order.note_attributes.findIndex(x => x.name === 'Delivery-Date');
                   var dateIndex2 = order.note_attributes.findIndex(x => x.name === 'Pickup-Date');
-                  console.log("dateIndex 1: " + dateIndex)
-                  console.log("dateIndex 2: " + dateIndex2)
+                  // console.log("dateIndex 1: " + dateIndex)
+                  // console.log("dateIndex 2: " + dateIndex2)
                   if (dateIndex > -1) {
                     order.note_attributes[dateIndex] = {
                       "name": 'Delivery-Date',
@@ -1702,7 +1702,7 @@ router.post('/new3/order', function(req, res, next) {
                       body: formData2
                     },
                     function(error, response, body) {
-                      // console.log(response.headers.date)
+                      // // console.log(response.headers.date)
                       // console.log(body)
                       if (error) {
                         console.log(error)
@@ -1931,7 +1931,7 @@ router.post('/new3/order', function(req, res, next) {
         if (doc.source_name === 'subscription_contract') {
           console.log('SUBSCRIPTION CODE 2')
           var original_order = doc;
-          console.log(doc.customer.id)
+          // console.log(doc.customer.id)
           var username = "36274b5cf78a52bfa4c6780ba48a2fb1";
           var password = "a26e549d188fe3459e1ed5b1c2cb1425";
           var url = "https://als-flowers.myshopify.com/admin/api/2021-01/customers/" + doc.customer.id + "/orders.json?status=any";
@@ -1945,7 +1945,7 @@ router.post('/new3/order', function(req, res, next) {
             },
             function(error, response, body) {
               // console.log(response.headers.date)
-              console.log(body)
+              // console.log(body)
               if (error) {
                 console.log(error)
                 res.send('index', {
@@ -1958,26 +1958,26 @@ router.post('/new3/order', function(req, res, next) {
                 var subscription_tag2 = "Subscription";
                 // console.log("Orders: " + subscription_number)
                 orders.slice(1).forEach(order => {
-                  console.log(order.shipping_lines[0].title)
+                  // console.log(order.shipping_lines[0].title)
                   if (order.shipping_lines[0].title === 'Subscription shipping' || order.shipping_lines[0].title === 'Subscription · Shipping') {
                     var today = moment().format('YYYY/MM/DD')
                     var today_tag = moment().format('MM/DD/YYYY')
                     var order_tags = order.tags.split(',').slice(1);
                     console.log('OLD TAGS: ' + order_tags)
-                    console.log(order.note_attributes)
-                    console.log(order.tags)
-                    console.log(original_order.id)
+                    // console.log(order.note_attributes)
+                    // console.log(order.tags)
+                    // console.log(original_order.id)
                     order_tags.push(today_tag)
                     order_tags.push(subscription_tag2)
                     // order_tags.join()
                     var new_tags = order_tags.join()
-                    console.log(new_tags)
+                    // console.log(new_tags)
                     console.log('NEW TAGS: ' + new_tags)
 
                     console.log('TODAY: ' + today)
                     var dateIndex = order.note_attributes.findIndex(x => x.name === 'Delivery-Date');
                     var dateIndex2 = order.note_attributes.findIndex(x => x.name === 'Pickup-Date');
-                    console.log(dateIndex)
+                    // console.log(dateIndex)
                     if (dateIndex > -1) {
                       order.note_attributes[dateIndex] = {
                         "name": 'Delivery-Date',
