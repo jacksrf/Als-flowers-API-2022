@@ -31,6 +31,7 @@
     "passport": "^0.6.0",
     "passport-local": "^1.0.0",
     "pdfkit": "^0.13.0",
+    "phantom": "^6.3.0",
     "restler": "^3.4.0",
     "webshot-node": "^0.18.3"
   }
