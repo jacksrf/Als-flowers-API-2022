@@ -415,7 +415,7 @@ router.post('/new2/order', function(req, res, next) {
             'width': 1350,
             'height': 2200
           },
-          phantomPath: require('phantom').path,
+          phantomPath: require('phantomjs2').path,
           phantomConfig: { 'ignore-ssl-errors': 'true'}
         }
         var options2 = {
@@ -516,7 +516,7 @@ router.post('/new2/order', function(req, res, next) {
             'width': 1350,
             'height': 2200
           },
-          phantomPath: require('phantom').path,
+          phantomPath: require('phantomjs2').path,
           Config: { 'ignore-ssl-errors': 'true'}
         }
         var options2 = {
@@ -624,7 +624,7 @@ router.get('/order/reprint/pdf/:id', isLoggedIn, function(req, res, next) {
             'width': 1350,
             'height': 2200
           },
-          phantomPath: require('phantom').path,
+          phantomPath: require('phantomjs2').path,
           phantomConfig: { 'ignore-ssl-errors': 'true'}
         }
         var options2 = {
@@ -1033,7 +1033,7 @@ router.post('/new/order', function(req, res, next) {
             'width': 1350,
             'height': 2200
           },
-          phantomPath: require('phantom').path,
+          phantomPath: require('phantomjs2').path,
           phantomConfig: { 'ignore-ssl-errors': 'true'}
         }
         var options2 = {
@@ -1151,7 +1151,7 @@ router.post('/new/order', function(req, res, next) {
             'width': 1350,
             'height': 2200
           },
-          phantomPath: require('phantom').path,
+          phantomPath: require('phantomjs2').path,
           phantomConfig: { 'ignore-ssl-errors': 'true'}
         }
         var options2 = {
@@ -1379,7 +1379,7 @@ router.post('/new/order', function(req, res, next) {
                                   'width': 1350,
                                   'height': 2200
                                 },
-                                phantomPath: require('phantom').path,
+                                phantomPath: require('phantomjs2').path,
                                 phantomConfig: { 'ignore-ssl-errors': 'true'}
                               }
                               var options2 = {
@@ -1496,7 +1496,7 @@ router.post('/new/order', function(req, res, next) {
             'width': 1350,
             'height': 2200
           },
-          phantomPath: require('phantom').path,
+          phantomPath: require('phantomjs2').path,
           phantomConfig: { 'ignore-ssl-errors': 'true'}
         }
         var options2 = {
