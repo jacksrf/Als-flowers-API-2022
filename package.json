@@ -39,6 +39,7 @@
     "passport-local": "^1.0.0",
     "pdfkit": "^0.8.3",
     "pdfmake": "^0.1.38",
+    "phantom": "^6.3.0",
     "phantomjs2": "^2.2.0",
     "restler": "^3.4.0",
     "webshot-node": "^0.18.3"
