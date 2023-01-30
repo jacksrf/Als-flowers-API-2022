@@ -5,6 +5,10 @@
   "scripts": {
     "start": "node ./bin/als-flowers-api"
   },
+  "engines": {
+    "node": "11.0.0",
+    "npm": "6.5.0"
+  },
   "dependencies": {
     "async": "^3.2.4",
     "aws-sdk": "^2.1303.0",
