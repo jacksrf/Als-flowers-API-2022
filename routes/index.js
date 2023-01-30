@@ -415,7 +415,7 @@ router.post('/new2/order', function(req, res, next) {
             'width': 1350,
             'height': 2200
           },
-          // phantomPath: require('phantomjs2').path,
+          phantomPath: require('phantom').path,
           phantomConfig: { 'ignore-ssl-errors': 'true'}
         }
         var options2 = {
@@ -516,7 +516,7 @@ router.post('/new2/order', function(req, res, next) {
             'width': 1350,
             'height': 2200
           },
-          // phantomPath: require('phantomjs2').path,
+          phantomPath: require('phantom').path,
           Config: { 'ignore-ssl-errors': 'true'}
         }
         var options2 = {
@@ -624,7 +624,7 @@ router.get('/order/reprint/pdf/:id', isLoggedIn, function(req, res, next) {
             'width': 1350,
             'height': 2200
           },
-          // phantomPath: require('phantomjs2').path,
+          phantomPath: require('phantom').path,
           phantomConfig: { 'ignore-ssl-errors': 'true'}
         }
         var options2 = {
@@ -1033,7 +1033,7 @@ router.post('/new/order', function(req, res, next) {
             'width': 1350,
             'height': 2200
           },
-          // phantomPath: require('phantomjs2').path,
+          phantomPath: require('phantom').path,
           phantomConfig: { 'ignore-ssl-errors': 'true'}
         }
         var options2 = {
@@ -1151,7 +1151,7 @@ router.post('/new/order', function(req, res, next) {
             'width': 1350,
             'height': 2200
           },
-          // phantomPath: require('phantomjs2').path,
+          phantomPath: require('phantom').path,
           phantomConfig: { 'ignore-ssl-errors': 'true'}
         }
         var options2 = {
@@ -1375,17 +1375,17 @@ router.post('/new/order', function(req, res, next) {
                             // console.log(printer.printer_id)
                             if (doc.note_attributes[1] != undefined) {
                               var options = {
-          screenSize: {
-            'width': 1350,
-            'height': 2200
-          },
-          // phantomPath: require('phantomjs2').path,
-          phantomConfig: { 'ignore-ssl-errors': 'true'}
-        }
-        var options2 = {
-          'width': 1350,
-          'height': 2200
-        }
+                                screenSize: {
+                                  'width': 1350,
+                                  'height': 2200
+                                },
+                                phantomPath: require('phantom').path,
+                                phantomConfig: { 'ignore-ssl-errors': 'true'}
+                              }
+                              var options2 = {
+                                'width': 1350,
+                                'height': 2200
+                              }
                               // console.log(doc._id)
                               webshot("https://admin.alsflowersmontgomery.com/order/pdf/" + doc._id, "./public/pdf/" + doc._id + ".pdf", options, function(err) {
                                 console.log(err)
@@ -1496,7 +1496,7 @@ router.post('/new/order', function(req, res, next) {
             'width': 1350,
             'height': 2200
           },
-          // phantomPath: require('phantomjs2').path,
+          phantomPath: require('phantom').path,
           phantomConfig: { 'ignore-ssl-errors': 'true'}
         }
         var options2 = {
