@@ -3,7 +3,7 @@
   <head>
     <!-- <link rel='stylesheet' href='/stylesheets/style.css' /> -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+
   </head>
   <style>
   body {
@@ -102,19 +102,21 @@ text-align: center;
       <div class="" style="display: flex;
     align-items: center;
     justify-content: space-between;">
-        <form action="/orders/search" method="post">
-          <input name="order" placeholder="Order # or Name" type="text"/>
-          <button type="submit" value="SEARCH">SEARCH</button>
-        </form>
-        <form action="" method="post" id="date_form">
-          <input name="date" placeholder="DATE" type="date"/>
-          <button type="submit" value="SEARCH" id="search_day">SEARCH DAY</button>
-        </form>
-        <button class="item button btn btn-success" style="width: 200px;"><a href="/orders/today">TODAYS ORDERS</a></button>
-        <button class="item button btn btn-success" style="width: 200px;"><a href="/orders/tomorrow">TOMORROWS ORDERS</a></button>
+      <button class="btn btn-default" style="margin-bottom: 50px;"><a href="/orders" style="color: black!important;">< RETURN TO ORDERS</a></button>
+      <!-- <button class="button btn btn-warning" style="margin-bottom: 50px;"><a href="/orders">PRINT</a></button> -->
+
+    </div>
+      <h1><%= date %> Orders: (<%= orders.length %>)</h1>
+      <div class="row">
+        <div class="item number">Order Number</div>
+        <div class="item name">Name</div>
+        <div class="item number">Type</div>
+        <div class="item number">ZIP</div>
+
+        <div class="item total">Total</div>
       </div>
-      <h1>Orders:</h1>
       <% for (i=0; i<orders.length; i++) { %>
+        <% if (orders[i] && (orders[i] != 'undefined' ||  orders[i] != undefined)) { %>
         <div class="row">
           <div class="item number">#<%= orders[i].order_number %></div>
           <% if (orders[i].customer) { %>
@@ -122,32 +124,21 @@ text-align: center;
           <% } else { %>
           <div class="item name">------------------</div>
           <% } %>
+          <div class="item number"><%= orders[i].orderNotes.checkout_method %></div>
+          <% if (orders[i].orderNotes.checkout_method === 'delivery' && orders[i].shipping_address) { %>
+          <div class="item number"><%= orders[i].shipping_address.zip %></div>
+          <% } else { %>
+          <div class="item number"></div>
+          <% } %>
           <div class="item total">$<%= orders[i].total_price_usd %></div>
           <!-- <button class="item button btn btn-info"><a href="">EDIT</a></button> -->
-          <button class="item button btn btn-success"><a href="/order/reprint/pdf/<%= orders[i]._id %>?key=<%= Math.random() %>">PRINT</a></button>
-          <button class="item button btn btn-warning"><a href="https://admin.alsflowersmontgomery.com/order/pdf/<%= orders[i]._id %>" target="_blank">PDF</a></button>
-          <button class="item button btn btn-danger"><a href="/order/json/<%= orders[i]._id %>">JSON</a></button>
-          <div class="item name" style="width: 300px; padding-left: 10px;">Updated: <%= moment(orders[i].updated_at).startOf('min').fromNow(); %></div>
+          <!-- <button class="item button btn btn-success"><a href="/order/reprint/pdf/<%= orders[i]._id %>?key=<%= Math.random() %>">PRINT</a></button> -->
+          <!-- <button class="item button btn btn-warning"><a href="/order/edit/<%= orders[i]._id %>">EDIT NOTES</a></button> -->
+          <!-- <button class="item button btn btn-danger"><a href="/order/json/<%= orders[i]._id %>">JSON</a></button> -->
         </div>
+        <% } %>
       <% } %>
     </div>
 
   </body>
-
-  <script
-  src="https://code.jquery.com/jquery-3.6.3.min.js"
-  integrity="sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU="
-  crossorigin="anonymous"></script>
-  <script>
-    $(document).ready(function() {
-
-      $('#search_day').on('click', function(e) {
-        e.preventDefault()
-        var date = $('#date_form').children('input').val()
-        console.log(date)
-        $('#date_form').attr('action', "/orders-by-day/"+encodeURI(date)).submit();
-      })
-
-    })
-  </script>
 </html>

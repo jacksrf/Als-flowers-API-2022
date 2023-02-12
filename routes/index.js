@@ -284,6 +284,77 @@ router.get('/orders/tomorrow', isLoggedIn, function(req, res, next) {
   })
 });
 
+router.post('/orders-by-day/:day', isLoggedIn, function(req, res, next) {
+  var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+  //console.log(ip)
+  //console.log(req)
+  var day = decodeURI(req.params.day);
+  var db = req.db;
+  var today = moment(day).format('YYYY/MM/DD').toString()
+  // var today = '2020/12/23'
+  console.log(today)
+  var ordersDB = db.get('orders')
+  var todaysOrders = [];
+  ordersDB.find({}, {
+    limit: 1000,
+    sort: {
+      _id: -1
+    }
+  }, function(err, orders) {
+    console.log(err)
+    // console.log(orders)
+    for (j = 0; j < orders.length; j++) {
+      orders[j].deliver_day = "";
+      orders[j].orderNotes = {};
+      if (orders[j].note_attributes && orders[j].customer != undefined) {
+        // console.log(orders[j].customer)
+        // console.log(orders[j].name)
+        for (i = 0; i < orders[j].note_attributes.length; i++) {
+          var key = orders[j].note_attributes[i].name.replace(/ /g, "_").replace(/-/g, "_").toLowerCase();
+          var value = orders[j].note_attributes[i].value.toString();
+          orders[j].orderNotes[key] = value;
+          if (i === orders[j].note_attributes.length - 1) {
+            // // console.log(orders[j].orderNotes)
+            // // console.log(orders[j].orderNotes.delivery_date)
+            // // console.log(today)
+            if (orders[j].orderNotes.checkout_method === 'delivery') {
+              if (orders[j].orderNotes.delivery_date) {
+                var delivery_date_clean = orders[j].orderNotes.delivery_date.replace(/-/g, "/")
+                if (delivery_date_clean === today) {
+                  // // console.log(orders[j].name)
+                  todaysOrders.push(orders[j])
+                }
+              }
+            }
+
+            if (orders[j].orderNotes.checkout_method === 'pickup') {
+              if (orders[j].orderNotes.pickup_date) {
+                var pickup_date_clean = orders[j].orderNotes.pickup_date.replace(/-/g, "/")
+                if (pickup_date_clean === today) {
+                  // // console.log(orders[j].name)
+                  todaysOrders.push(orders[j])
+                }
+              }
+            }
+          }
+        }
+      }
+      if (j === orders.length - 1) {
+        // var todaysOrdersSet = new Set(todaysOrders);
+        var todaysOrdersClean = Array.from(new Set(todaysOrders.map(a => a.id)))
+          .map(id => {
+            return todaysOrders.find(a => a.id === id)
+          })
+        res.render('orders-random-day', {
+          date: moment(day).format('MM/DD/YYYY'),
+          orders: todaysOrdersClean
+        })
+      }
+    }
+
+  })
+});
+
 router.post('/orders/search', isLoggedIn, function(req, res, next) {
   var order = req.body.order;
   // console.log(order)
