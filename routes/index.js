@@ -499,7 +499,7 @@ router.post('/new2/order', function(req, res, next) {
                 // setTimeout(function() {
                 // 545151
                 var formData = {
-                  "printer": 72113825,
+                  "printer": 72221833,
                   "title": "Order: " + doc.order_number,
                   "contentType": "pdf_uri",
                   "content": "https://api.alsflowersmontgomery.com/pdf/" + doc._id + ".pdf",
@@ -600,7 +600,7 @@ router.post('/new2/order', function(req, res, next) {
               // setTimeout(function() {
               // 545151
               var formData = {
-                "printer": 72113825,
+                "printer": 72221833,
                 "title": "Order: " + doc.order_number,
                 "contentType": "pdf_uri",
                 "content": "https://api.alsflowersmontgomery.com/pdf/" + doc._id + ".pdf",
@@ -710,7 +710,7 @@ router.get('/order/reprint/pdf/:id', isLoggedIn, function(req, res, next) {
             // console.log(printer.printer_id)
             var formData = {
               // "printer": printer.printer_id,
-              "printer": 72113825,
+              "printer": 72221833,
               "title": "Order: " + doc.order_number,
               "contentType": "pdf_uri",
               "content": "https://api.alsflowersmontgomery.com/pdf/" + doc._id + ".pdf?t=" + Math.random(),
@@ -1117,7 +1117,7 @@ router.post('/new/order', function(req, res, next) {
                               // setTimeout(function() {
                               // 545151
                               var formData = {
-                                "printer": 72113825,
+                                "printer": 72221833,
                                 "title": "Order: " + doc.order_number,
                                 "contentType": "pdf_uri",
                                 "content": "https://api.alsflowersmontgomery.com/pdf/" + doc._id + ".pdf",
@@ -1235,7 +1235,7 @@ router.post('/new/order', function(req, res, next) {
               // setTimeout(function() {
               // 545151
               var formData = {
-                "printer": 72113825,
+                "printer": 72221833,
                 "title": "Order: " + doc.order_number,
                 "contentType": "pdf_uri",
                 "content": "https://api.alsflowersmontgomery.com/pdf/" + doc._id + ".pdf",
@@ -1463,7 +1463,7 @@ router.post('/new/order', function(req, res, next) {
                                 // setTimeout(function() {
                                 // 545151
                                 var formData = {
-                                  "printer": 72113825,
+                                  "printer": 72221833,
                                   "title": "Order: " + doc.order_number,
                                   "contentType": "pdf_uri",
                                   "content": "https://api.alsflowersmontgomery.com/pdf/" + doc._id + ".pdf",
@@ -1580,7 +1580,7 @@ router.post('/new/order', function(req, res, next) {
                 // setTimeout(function() {
                 // 545151
                 var formData = {
-                  "printer": 72113825,
+                  "printer": 72221833,
                   "title": "Order: " + doc.order_number,
                   "contentType": "pdf_uri",
                   "content": "https://api.alsflowersmontgomery.com/pdf/" + doc._id + ".pdf",
@@ -1825,7 +1825,7 @@ router.post('/new3/order', function(req, res, next) {
                             //   // setTimeout(function() {
                             //   // 545151
                             //   var formData = {
-                            //     "printer": 72113825,
+                            //     "printer": 72221833,
                             //     "title": "Order: " + doc.order_number,
                             //     "contentType": "pdf_uri",
                             //     "content": "https://api.alsflowersmontgomery.com/pdf/" + doc._id + ".pdf",
@@ -1931,7 +1931,7 @@ router.post('/new3/order', function(req, res, next) {
             //   // setTimeout(function() {
             //   // 545151
             //   var formData = {
-            //     "printer": 72113825,
+            //     "printer": 72221833,
             //     "title": "Order: " + doc.order_number,
             //     "contentType": "pdf_uri",
             //     "content": "https://api.alsflowersmontgomery.com/pdf/" + doc._id + ".pdf",
@@ -2136,7 +2136,7 @@ router.post('/new3/order', function(req, res, next) {
                               //   // setTimeout(function() {
                               //   // 545151
                               //   var formData = {
-                              //     "printer": 72113825,
+                              //     "printer": 72221833,
                               //     "title": "Order: " + doc.order_number,
                               //     "contentType": "pdf_uri",
                               //     "content": "https://api.alsflowersmontgomery.com/pdf/" + doc._id + ".pdf",
@@ -2242,7 +2242,7 @@ router.post('/new3/order', function(req, res, next) {
               //   // setTimeout(function() {
               //   // 545151
               //   var formData = {
-              //     "printer": 72113825,
+              //     "printer": 72221833,
               //     "title": "Order: " + doc.order_number,
               //     "contentType": "pdf_uri",
               //     "content": "https://api.alsflowersmontgomery.com/pdf/" + doc._id + ".pdf",
