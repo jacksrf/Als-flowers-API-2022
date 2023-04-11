@@ -505,7 +505,7 @@ router.post('/new2/order', function(req, res, next) {
                   "content": "https://api.alsflowersmontgomery.com/pdf/" + doc._id + ".pdf",
                   "source": "api documentation!",
                   "options": {
-                    "paper": "Legal",
+                    "paper": "Legal (8.5 x 14 in)",
                   }
                 }
                 var username = "7qPBLc9mtxCwF1vc53b4c774OhS5CbRMZfoxN3jy78A";
@@ -606,7 +606,7 @@ router.post('/new2/order', function(req, res, next) {
                 "content": "https://api.alsflowersmontgomery.com/pdf/" + doc._id + ".pdf",
                 "source": "api documentation!",
                 "options": {
-                  "paper": "Legal",
+                  "paper": "Legal (8.5 x 14 in)",
                 }
               }
               var username = "7qPBLc9mtxCwF1vc53b4c774OhS5CbRMZfoxN3jy78A";
@@ -716,7 +716,7 @@ router.get('/order/reprint/pdf/:id', isLoggedIn, function(req, res, next) {
               "content": "https://api.alsflowersmontgomery.com/pdf/" + doc._id + ".pdf?t=" + Math.random(),
               "source": "api documentation!",
               "options": {
-                "paper": "Legal",
+                "paper": "Legal (8.5 x 14 in)",
               }
             }
             var username = "7qPBLc9mtxCwF1vc53b4c774OhS5CbRMZfoxN3jy78A";
@@ -1123,7 +1123,7 @@ router.post('/new/order', function(req, res, next) {
                                 "content": "https://api.alsflowersmontgomery.com/pdf/" + doc._id + ".pdf",
                                 "source": "api documentation!",
                                 "options": {
-                                  "paper": "Legal",
+                                  "paper": "Legal (8.5 x 14 in)",
                                 }
                               }
                               var username = "7qPBLc9mtxCwF1vc53b4c774OhS5CbRMZfoxN3jy78A";
@@ -1241,7 +1241,7 @@ router.post('/new/order', function(req, res, next) {
                 "content": "https://api.alsflowersmontgomery.com/pdf/" + doc._id + ".pdf",
                 "source": "api documentation!",
                 "options": {
-                  "paper": "Legal",
+                  "paper": "Legal (8.5 x 14 in)",
                 }
               }
               var username = "7qPBLc9mtxCwF1vc53b4c774OhS5CbRMZfoxN3jy78A";
@@ -1469,7 +1469,7 @@ router.post('/new/order', function(req, res, next) {
                                   "content": "https://api.alsflowersmontgomery.com/pdf/" + doc._id + ".pdf",
                                   "source": "api documentation!",
                                   "options": {
-                                    "paper": "Legal",
+                                    "paper": "Legal (8.5 x 14 in)",
                                   }
                                 }
                                 var username = "7qPBLc9mtxCwF1vc53b4c774OhS5CbRMZfoxN3jy78A";
@@ -1586,7 +1586,7 @@ router.post('/new/order', function(req, res, next) {
                   "content": "https://api.alsflowersmontgomery.com/pdf/" + doc._id + ".pdf",
                   "source": "api documentation!",
                   "options": {
-                    "paper": "Legal",
+                    "paper": "Legal (8.5 x 14 in)",
                   }
                 }
                 var username = "7qPBLc9mtxCwF1vc53b4c774OhS5CbRMZfoxN3jy78A";
@@ -1831,7 +1831,7 @@ router.post('/new3/order', function(req, res, next) {
                             //     "content": "https://api.alsflowersmontgomery.com/pdf/" + doc._id + ".pdf",
                             //     "source": "api documentation!",
                             //     "options": {
-                            //       "paper": "Legal",
+                            //       "paper": "Legal (8.5 x 14 in)",
                             //     }
                             //   }
                             //   var username = "7qPBLc9mtxCwF1vc53b4c774OhS5CbRMZfoxN3jy78A";
@@ -1937,7 +1937,7 @@ router.post('/new3/order', function(req, res, next) {
             //     "content": "https://api.alsflowersmontgomery.com/pdf/" + doc._id + ".pdf",
             //     "source": "api documentation!",
             //     "options": {
-            //       "paper": "Legal",
+            //       "paper": "Legal (8.5 x 14 in)",
             //     }
             //   }
             //   var username = "7qPBLc9mtxCwF1vc53b4c774OhS5CbRMZfoxN3jy78A";
@@ -2142,7 +2142,7 @@ router.post('/new3/order', function(req, res, next) {
                               //     "content": "https://api.alsflowersmontgomery.com/pdf/" + doc._id + ".pdf",
                               //     "source": "api documentation!",
                               //     "options": {
-                              //       "paper": "Legal",
+                              //       "paper": "Legal (8.5 x 14 in)",
                               //     }
                               //   }
                               //   var username = "7qPBLc9mtxCwF1vc53b4c774OhS5CbRMZfoxN3jy78A";
@@ -2248,7 +2248,7 @@ router.post('/new3/order', function(req, res, next) {
               //     "content": "https://api.alsflowersmontgomery.com/pdf/" + doc._id + ".pdf",
               //     "source": "api documentation!",
               //     "options": {
-              //       "paper": "Legal",
+              //       "paper": "Legal (8.5 x 14 in)",
               //     }
               //   }
               //   var username = "7qPBLc9mtxCwF1vc53b4c774OhS5CbRMZfoxN3jy78A";
