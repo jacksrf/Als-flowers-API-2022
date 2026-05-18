@@ -10,6 +10,7 @@ var request = require('request');
 var webshot = require('webshot-node');
 var moment = require('moment');
 var nl2br = require('nl2br');
+var printOrder = require('../lib/printOrder');
 
 var multipart = require('connect-multiparty');
 var multipartMiddleware = multipart();
@@ -132,6 +133,16 @@ router.get('/orders', isLoggedIn, function(req, res, next) {
     limit: 500,
     sort: {
       'processed_at': -1
+    },
+    fields: {
+      _id: 1,
+      id: 1,
+      name: 1,
+      order_number: 1,
+      customer: 1,
+      total_price_usd: 1,
+      updated_at: 1,
+      processed_at: 1
     }
   }, function(err, orders) {
     console.log(err)
@@ -478,70 +489,22 @@ router.get('/order/reprint/pdf/:id', isLoggedIn, function(req, res, next) {
       console.log(err);
       return renderPrintResult('THERE WAS AN ISSUE PRINTING, LET TREY KNOW IMMEDIATELY');
     }
-    if (!doc) {
-      console.log('REPRINT order not found: ' + id);
-      return renderPrintResult('ORDER NOT FOUND — COULD NOT PRINT.');
-    }
-    if (!doc.note_attributes || doc.note_attributes[1] === undefined) {
-      console.log('REPRINT missing note_attributes for order: ' + doc.order_number);
-      return renderPrintResult('THIS ORDER IS MISSING CHECKOUT DETAILS — CANNOT PRINT. TRY EDITING THE ORDER FIRST.');
+    if (!doc || !printOrder.hasNoteAttributes(doc) || doc.note_attributes[1] === undefined) {
+      console.log('REPRINT cannot print order: ' + id);
+      return renderPrintResult('ORDER NOT FOUND OR MISSING CHECKOUT DETAILS — CANNOT PRINT.');
     }
 
-    var orderId = doc._id.toString ? doc._id.toString() : doc._id;
-    console.log('REPRINT webshot start for order #' + doc.order_number);
-    var options = {
-      screenSize: {
-        'width': 1350,
-        'height': 2200
-      },
-      phantomPath: require('phantomjs2').path,
-      phantomConfig: { 'ignore-ssl-errors': 'true' }
-    };
-
-    webshot(
-      'https://admin.alsflowersmontgomery.com/order/pdf/' + orderId,
-      './public/pdf/' + orderId + '.pdf',
-      options,
-      function(shotErr) {
-        if (shotErr) {
-          console.log(shotErr);
-          return renderPrintResult('PDF GENERATION FAILED — LET TREY KNOW. (' + shotErr.message + ')');
-        }
-
-        setTimeout(function() {
-          var formData = {
-            'printer': 72408224,
-            'title': 'Order: ' + doc.order_number,
-            'contentType': 'pdf_uri',
-            'content': 'https://api.alsflowersmontgomery.com/pdf/' + orderId + '.pdf?t=' + Math.random(),
-            'source': 'api documentation!',
-            'options': {
-              'paper': 'Legal (8.5 x 14 in)'
-            }
-          };
-          var username = '7qPBLc9mtxCwF1vc53b4c774OhS5CbRMZfoxN3jy78A';
-          var password = '';
-          var url = 'https://api.printnode.com/printjobs';
-          var auth = 'Basic ' + new Buffer(username + ':' + password).toString('base64');
-
-          request.post({
-            url: url,
-            headers: { 'Authorization': auth },
-            json: true,
-            body: formData
-          }, function(error, response, body) {
-            if (error) {
-              console.log(error);
-              return renderPrintResult('THERE WAS AN ISSUE PRINTING, LET TREY KNOW IMMEDIATELY');
-            }
-            console.log('REPRINT');
-            console.log(moment().format('MMMM Do YYYY, h:mm a'));
-            console.log('REPRINTED ------ ORDER#:' + doc.order_number);
-            renderPrintResult('COMPLETED! YOURE PRINT SHOULD BECOMING SOON.');
-          });
-        }, 4000);
+    console.log('REPRINT queued for order #' + doc.order_number);
+    printOrder.enqueuePrint(doc, {
+      logLabel: 'REPRINT',
+      cacheBust: true,
+      reprintDelay: 4000
+    }, function(printErr) {
+      if (printErr) {
+        return renderPrintResult('THERE WAS AN ISSUE PRINTING, LET TREY KNOW IMMEDIATELY');
       }
-    );
+      renderPrintResult('COMPLETED! YOURE PRINT SHOULD BECOMING SOON.');
+    });
   });
 })
 
@@ -726,8 +689,7 @@ router.post('/new/order', function(req, res, next) {
     "name": order_number
   }, {}, function(err, doc) {
     console.log('*/-----------NEW ORDER------------/*')
-    console.log(err)
-    // console.log(doc)
+    console.log('order_number:', order_number, 'existing:', !!doc)
     if (doc) {
 
       /////////////////////////////////
@@ -836,112 +798,9 @@ router.post('/new/order', function(req, res, next) {
                       // console.log(body)
                       if (error) {
                         console.log(error)
+                        printOrder.webhookAck(res);
                       } else {
-                        doc.note = nl2br(doc.note);
-                        // console.log(doc.note);
-                        doc.deliver_day = "";
-                        if (doc.user_id) {
-
-                        } else {
-                          doc.user_id = "";
-                        }
-                        doc.orderNotes = {};
-
-                        for (i = 0; i < doc.note_attributes.length; i++) {
-                          var key = doc.note_attributes[i].name.replace(/ /g, "_").replace(/-/g, "_").toLowerCase();
-                          var value = doc.note_attributes[i].value.toString();
-                          doc.orderNotes[key] = value;
-                          if (i === doc.note_attributes.length - 1) {
-                            // console.log(doc.orderNotes)
-                          }
-                        }
-                        if (doc.orderNotes.checkout_method === "delivery" || doc.orderNotes.checkout_method === 'pickup') {
-                          // console.log(doc)
-                          if (doc.orderNotes.checkout_method === "delivery") {
-
-                          }
-
-                          if (doc.orderNotes.checkout_method === "pickup") {
-
-                          }
-                          // var printerDB = db.get('printer')
-                          // printerDB.findOne({}, {}, function(err, printer) {
-                          // console.log(printer.printer_id)
-                          if (doc.note_attributes[1] != undefined) {
-                            var options = {
-                              screenSize: {
-                                'width': 1350,
-                                'height': 2200
-                              },
-                              phantomPath: require('phantomjs2').path,
-                              phantomConfig: { 'ignore-ssl-errors': 'true'}
-                            }
-                            var options2 = {
-                              'width': 1350,
-                              'height': 2200
-                            }
-                            // console.log(doc._id)
-                            webshot("https://admin.alsflowersmontgomery.com/order/pdf/" + doc._id, "./public/pdf/" + doc._id + ".pdf", options, function(err) {
-                              console.log(err)
-                              // setTimeout(function() {
-                              // 545151
-                              var formData = {
-                                "printer": 72408224,
-                                "title": "Order: " + doc.order_number,
-                                "contentType": "pdf_uri",
-                                "content": "https://api.alsflowersmontgomery.com/pdf/" + doc._id + ".pdf",
-                                "source": "api documentation!",
-                                "options": {
-                                  "paper": "Legal (8.5 x 14 in)",
-                                }
-                              }
-                              var username = "7qPBLc9mtxCwF1vc53b4c774OhS5CbRMZfoxN3jy78A";
-                              var password = "";
-                              var url = "https://api.printnode.com/printjobs";
-                              var auth = "Basic " + new Buffer(username + ":" + password).toString("base64");
-
-                              request.post({
-                                  url: url,
-                                  headers: {
-                                    "Authorization": auth
-                                  },
-                                  json: true,
-                                  body: formData
-                                },
-                                function(error, response, body) {
-                                  if (error) {
-                                    console.log(error)
-                                    // setTimeout(function() {
-                                    res.end();
-                                    // }, 1000)
-                                  } else {
-                                    // console.log(response)
-                                    console.log(moment().format('MMMM Do YYYY, h:mm a'));
-                                    console.log('NEW ORDER#:' + doc.order_number)
-                                    // fs.unlink("./public/pdf/" + doc._id + ".pdf", (err) => {
-                                    //     if (err) {
-                                    //         throw err;
-                                    //     }
-                                    //
-                                    //     console.log("Delete File successfully.");
-                                    // });
-                                    // setTimeout(function() {
-                                    res.end();
-                                    // }, 1000)
-                                  }
-                                }
-                              );
-
-                              // }, 4000)
-                            });
-
-                          } else {
-                            res.end();
-                          }
-                          // })
-                        } else {
-                          res.send()
-                        }
+                        printOrder.finishWebhookWithPrint(doc, db, res, nl2br);
                       }
                     }
                   );
@@ -950,116 +809,15 @@ router.post('/new/order', function(req, res, next) {
 
               }
               });
+              if (!found) {
+                printOrder.webhookAck(res);
+              }
             }
           }
         );
 
       } else {
-        doc.note = nl2br(doc.note);
-        // console.log(doc.note);
-        doc.deliver_day = "";
-        if (doc.user_id) {
-
-        } else {
-          doc.user_id = "";
-        }
-        doc.orderNotes = {};
-
-        for (i = 0; i < doc.note_attributes.length; i++) {
-          var key = doc.note_attributes[i].name.replace(/ /g, "_").replace(/-/g, "_").toLowerCase();
-          var value = doc.note_attributes[i].value.toString();
-          doc.orderNotes[key] = value;
-          if (i === doc.note_attributes.length - 1) {
-            // console.log(doc.orderNotes)
-          }
-        }
-        if (doc.orderNotes.checkout_method === "delivery" || doc.orderNotes.checkout_method === 'pickup') {
-          // console.log(doc)
-          if (doc.orderNotes.checkout_method === "delivery") {
-
-          }
-
-          if (doc.orderNotes.checkout_method === "pickup") {
-
-          }
-          // var printerDB = db.get('printer')
-          // printerDB.findOne({}, {}, function(err, printer) {
-          // console.log(printer.printer_id)
-          if (doc.note_attributes[1] != undefined) {
-            var options = {
-          screenSize: {
-            'width': 1350,
-            'height': 2200
-          },
-          phantomPath: require('phantomjs2').path,
-          phantomConfig: { 'ignore-ssl-errors': 'true'}
-        }
-        var options2 = {
-          'width': 1350,
-          'height': 2200
-        }
-            // console.log(doc._id)
-            webshot("https://admin.alsflowersmontgomery.com/order/pdf/" + doc._id, "./public/pdf/" + doc._id + ".pdf", options, function(err) {
-              console.log(err)
-              // setTimeout(function() {
-              // 545151
-              var formData = {
-                "printer": 72408224,
-                "title": "Order: " + doc.order_number,
-                "contentType": "pdf_uri",
-                "content": "https://api.alsflowersmontgomery.com/pdf/" + doc._id + ".pdf",
-                "source": "api documentation!",
-                "options": {
-                  "paper": "Legal (8.5 x 14 in)",
-                }
-              }
-              var username = "7qPBLc9mtxCwF1vc53b4c774OhS5CbRMZfoxN3jy78A";
-              var password = "";
-              var url = "https://api.printnode.com/printjobs";
-              var auth = "Basic " + new Buffer(username + ":" + password).toString("base64");
-
-              request.post({
-                  url: url,
-                  headers: {
-                    "Authorization": auth
-                  },
-                  json: true,
-                  body: formData
-                },
-                function(error, response, body) {
-                  if (error) {
-                    console.log(error)
-                    // setTimeout(function() {
-                    res.end();
-                    // }, 1000)
-                  } else {
-                    // console.log(response)
-                    console.log(moment().format('MMMM Do YYYY, h:mm a'));
-                    console.log('NEW ORDER#:' + doc.order_number)
-                    // fs.unlink("./public/pdf/" + doc._id + ".pdf", (err) => {
-                    //     if (err) {
-                    //         throw err;
-                    //     }
-                    //
-                    //     console.log("Delete File successfully.");
-                    // });
-                    // setTimeout(function() {
-                    res.end();
-                    // }, 1000)
-                  }
-                }
-              );
-
-              // }, 4000)
-            });
-
-          } else {
-            res.end();
-          }
-          // })
-        } else {
-          res.send()
-        }
+        printOrder.finishWebhookWithPrint(doc, db, res, nl2br);
       }
 
       ///////////////////////////////////////////////
@@ -1077,6 +835,9 @@ router.post('/new/order', function(req, res, next) {
       //   "id": req.body.id
       ordersDB.insert(req.body, function(err, doc) {
         console.log(err)
+        if (err || !doc) {
+          return res.status(500).send('insert failed');
+        }
         if (doc.source_name === 'subscription_contract') {
           console.log('SUBSCRIPTION CODE 2')
           var original_order = doc;
@@ -1182,112 +943,9 @@ router.post('/new/order', function(req, res, next) {
                         // console.log(body)
                         if (error) {
                           console.log(error)
+                          printOrder.webhookAck(res);
                         } else {
-                          doc.note = nl2br(doc.note);
-                          // console.log(doc.note);
-                          doc.deliver_day = "";
-                          if (doc.user_id) {
-
-                          } else {
-                            doc.user_id = "";
-                          }
-                          doc.orderNotes = {};
-
-                          for (i = 0; i < doc.note_attributes.length; i++) {
-                            var key = doc.note_attributes[i].name.replace(/ /g, "_").replace(/-/g, "_").toLowerCase();
-                            var value = doc.note_attributes[i].value.toString();
-                            doc.orderNotes[key] = value;
-                            if (i === doc.note_attributes.length - 1) {
-                              // console.log(doc.orderNotes)
-                            }
-                          }
-                          if (doc.orderNotes.checkout_method === "delivery" || doc.orderNotes.checkout_method === 'pickup') {
-                            // console.log(doc)
-                            if (doc.orderNotes.checkout_method === "delivery") {
-
-                            }
-
-                            if (doc.orderNotes.checkout_method === "pickup") {
-
-                            }
-                            // var printerDB = db.get('printer')
-                            // printerDB.findOne({}, {}, function(err, printer) {
-                            // console.log(printer.printer_id)
-                            if (doc.note_attributes[1] != undefined) {
-                              var options = {
-                                screenSize: {
-                                  'width': 1350,
-                                  'height': 2200
-                                },
-                                phantomPath: require('phantomjs2').path,
-                                phantomConfig: { 'ignore-ssl-errors': 'true'}
-                              }
-                              var options2 = {
-                                'width': 1350,
-                                'height': 2200
-                              }
-                              // console.log(doc._id)
-                              webshot("https://admin.alsflowersmontgomery.com/order/pdf/" + doc._id, "./public/pdf/" + doc._id + ".pdf", options, function(err) {
-                                console.log(err)
-                                // setTimeout(function() {
-                                // 545151
-                                var formData = {
-                                  "printer": 72408224,
-                                  "title": "Order: " + doc.order_number,
-                                  "contentType": "pdf_uri",
-                                  "content": "https://api.alsflowersmontgomery.com/pdf/" + doc._id + ".pdf",
-                                  "source": "api documentation!",
-                                  "options": {
-                                    "paper": "Legal (8.5 x 14 in)",
-                                  }
-                                }
-                                var username = "7qPBLc9mtxCwF1vc53b4c774OhS5CbRMZfoxN3jy78A";
-                                var password = "";
-                                var url = "https://api.printnode.com/printjobs";
-                                var auth = "Basic " + new Buffer(username + ":" + password).toString("base64");
-
-                                request.post({
-                                    url: url,
-                                    headers: {
-                                      "Authorization": auth
-                                    },
-                                    json: true,
-                                    body: formData
-                                  },
-                                  function(error, response, body) {
-                                    if (error) {
-                                      console.log(error)
-                                      // setTimeout(function() {
-                                      res.end();
-                                      // }, 1000)
-                                    } else {
-                                      // console.log(response)
-                                      console.log(moment().format('MMMM Do YYYY, h:mm a'));
-                                      console.log('NEW ORDER#:' + doc.order_number)
-                                      // fs.unlink("./public/pdf/" + doc._id + ".pdf", (err) => {
-                                      //     if (err) {
-                                      //         throw err;
-                                      //     }
-                                      //
-                                      //     console.log("Delete File successfully.");
-                                      // });
-                                      // setTimeout(function() {
-                                      res.end();
-                                      // }, 1000)
-                                    }
-                                  }
-                                );
-
-                                // }, 4000)
-                              });
-
-                            } else {
-                              res.end();
-                            }
-                            // })
-                          } else {
-                            res.send()
-                          }
+                          printOrder.finishWebhookWithPrint(doc, db, res, nl2br);
                         }
                       }
                     );
@@ -1295,116 +953,15 @@ router.post('/new/order', function(req, res, next) {
                 } else {
                 }
                 });
+                if (!found) {
+                  printOrder.webhookAck(res);
+                }
               }
             }
           );
 
         } else {
-          doc.note = nl2br(doc.note);
-          // console.log(doc.note);
-          doc.deliver_day = "";
-          if (doc.user_id) {
-
-          } else {
-            doc.user_id = "";
-          }
-          doc.orderNotes = {};
-
-          for (i = 0; i < doc.note_attributes.length; i++) {
-            var key = doc.note_attributes[i].name.replace(/ /g, "_").replace(/-/g, "_").toLowerCase();
-            var value = doc.note_attributes[i].value.toString();
-            doc.orderNotes[key] = value;
-            if (i === doc.note_attributes.length - 1) {
-              // console.log(doc.orderNotes)
-            }
-          }
-          if (doc.orderNotes.checkout_method === "delivery" || doc.orderNotes.checkout_method === 'pickup') {
-            // console.log(doc)
-            if (doc.orderNotes.checkout_method === "delivery") {
-
-            }
-
-            if (doc.orderNotes.checkout_method === "pickup") {
-
-            }
-            // var printerDB = db.get('printer')
-            // printerDB.findOne({}, {}, function(err, printer) {
-            // console.log(printer.printer_id)
-            if (doc.note_attributes[1] != undefined) {
-              var options = {
-          screenSize: {
-            'width': 1350,
-            'height': 2200
-          },
-          phantomPath: require('phantomjs2').path,
-          phantomConfig: { 'ignore-ssl-errors': 'true'}
-        }
-        var options2 = {
-          'width': 1350,
-          'height': 2200
-        }
-              // console.log(doc._id)
-              webshot("https://admin.alsflowersmontgomery.com/order/pdf/" + doc._id, "./public/pdf/" + doc._id + ".pdf", options, function(err) {
-                console.log(err)
-                // setTimeout(function() {
-                // 545151
-                var formData = {
-                  "printer": 72408224,
-                  "title": "Order: " + doc.order_number,
-                  "contentType": "pdf_uri",
-                  "content": "https://api.alsflowersmontgomery.com/pdf/" + doc._id + ".pdf",
-                  "source": "api documentation!",
-                  "options": {
-                    "paper": "Legal (8.5 x 14 in)",
-                  }
-                }
-                var username = "7qPBLc9mtxCwF1vc53b4c774OhS5CbRMZfoxN3jy78A";
-                var password = "";
-                var url = "https://api.printnode.com/printjobs";
-                var auth = "Basic " + new Buffer(username + ":" + password).toString("base64");
-
-                request.post({
-                    url: url,
-                    headers: {
-                      "Authorization": auth
-                    },
-                    json: true,
-                    body: formData
-                  },
-                  function(error, response, body) {
-                    if (error) {
-                      console.log(error)
-                      // setTimeout(function() {
-                      res.end();
-                      // }, 1000)
-                    } else {
-                      // console.log(response)
-                      console.log(moment().format('MMMM Do YYYY, h:mm a'));
-                      console.log('NEW ORDER#:' + doc.order_number)
-                      // fs.unlink("./public/pdf/" + doc._id + ".pdf", (err) => {
-                      //     if (err) {
-                      //         throw err;
-                      //     }
-                      //
-                      //     console.log("Delete File successfully.");
-                      // });
-                      // setTimeout(function() {
-                      res.end();
-                      // }, 1000)
-                    }
-                  }
-                );
-
-                // }, 4000)
-              });
-
-            } else {
-              res.end();
-            }
-            // })
-          } else {
-            res.send()
-          }
+          printOrder.finishWebhookWithPrint(doc, db, res, nl2br);
         }
       })
     }
@@ -1415,659 +972,11 @@ router.post('/new/order', function(req, res, next) {
 });
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-router.post('/new3/order', function(req, res, next) {
-  var db = req.db;
-  var ordersDB = db.get('orders')
-  var order_number = req.body.name;
-  ordersDB.findOne({
-    "name": order_number
-  }, {}, function(err, doc) {
-    console.log('*/-----------NEW ORDER------------/*')
-    console.log(err)
-    // console.log(doc)
-    if (doc) {
-
-      /////////////////////////////////
-
-      if (doc.source_name === 'subscription_contract') {
-        console.log('SUBSCRIPTION CODE 1')
-        var original_order = doc;
-        // console.log(doc.customer.id)
-        var username = "36274b5cf78a52bfa4c6780ba48a2fb1";
-        var password = "a26e549d188fe3459e1ed5b1c2cb1425";
-        var url = "https://als-flowers.myshopify.com/admin/api/2021-01/customers/" + doc.customer.id + "/orders.json?status=any";
-        var auth = "Basic " + new Buffer(username + ":" + password).toString("base64");
-
-        request.get({
-            url: url,
-            headers: {
-              "Authorization": auth
-            },
-          },
-          function(error, response, body) {
-            // console.log(response.headers.date)
-            // console.log(body)
-            if (error) {
-              console.log(error)
-              res.send('index', {
-                "message": "THERE WAS AN ISSUE PRINTING, LET TREY KNOW IMMEDIATELY"
-              })
-            } else {
-              var orders = JSON.parse(body).orders;
-              // var subscription_number = orders.length + 1;
-              // var subscription_tag = "Subscription " + subscription_number;
-              var subscription_tag2 = "Subscription";
-              // console.log("Orders: " + subscription_number)
-              orders.slice(1).forEach(order => {
-                if (order.shipping_lines[0].title === 'Subscription shipping' || order.shipping_lines[0].title === 'Subscription · Shipping') {
-                  var today = moment().format('YYYY/MM/DD')
-                  var today_tag = moment().format('MM/DD/YYYY')
-                  var order_tags = order.tags.split(',').slice(1);
-                  // console.log('OLD TAGS: ' + order_tags)
-                  // console.log(order.note_attributes)
-                  // console.log(order.tags)
-                  // console.log(original_order.id)
-                  order_tags.push(today_tag)
-                  order_tags.push(subscription_tag2)
-                  // order_tags.join()
-                  var new_tags = order_tags.join()
-                  // console.log(new_tags)
-                  // console.log('NEW TAGS: ' + new_tags)
-                  console.log('TODAY: ' + today)
-                  var dateIndex = order.note_attributes.findIndex(x => x.name === 'Delivery-Date');
-                  var dateIndex2 = order.note_attributes.findIndex(x => x.name === 'Pickup-Date');
-                  // console.log("dateIndex 1: " + dateIndex)
-                  // console.log("dateIndex 2: " + dateIndex2)
-                  if (dateIndex > -1) {
-                    order.note_attributes[dateIndex] = {
-                      "name": 'Delivery-Date',
-                      "value": today
-                    }
-                  }
-                  if (dateIndex2 > -1) {
-                    order.note_attributes[dateIndex2] = {
-                      "name": 'Pickup-Date',
-                      "value": today
-                    }
-                  }
-
-                  var formData2 = {
-                    "order": {
-                      "id": original_order.id,
-                      "note": order.note,
-                      "tags": new_tags,
-                      "note_attributes": order.note_attributes
-                    }
-                  }
-                  var username2 = "36274b5cf78a52bfa4c6780ba48a2fb1";
-                  var password2 = "a26e549d188fe3459e1ed5b1c2cb1425";
-                  var url2 = "https://als-flowers.myshopify.com/admin/api/2021-01/orders/" + original_order.id + ".json";
-                  var auth2 = "Basic " + new Buffer(username2 + ":" + password2).toString("base64");
-
-                  request.put({
-                      url: url2,
-                      headers: {
-                        "Authorization": auth2
-                      },
-                      json: true,
-                      body: formData2
-                    },
-                    function(error, response, body) {
-                      // // console.log(response.headers.date)
-                      // console.log(body)
-                      if (error) {
-                        console.log(error)
-                      } else {
-                        doc.note = nl2br(doc.note);
-                        // console.log(doc.note);
-                        doc.deliver_day = "";
-                        if (doc.user_id) {
-
-                        } else {
-                          doc.user_id = "";
-                        }
-                        doc.orderNotes = {};
-
-                        for (i = 0; i < doc.note_attributes.length; i++) {
-                          var key = doc.note_attributes[i].name.replace(/ /g, "_").replace(/-/g, "_").toLowerCase();
-                          var value = doc.note_attributes[i].value.toString();
-                          doc.orderNotes[key] = value;
-                          if (i === doc.note_attributes.length - 1) {
-                            // console.log(doc.orderNotes)
-                          }
-                        }
-                        if (doc.orderNotes.checkout_method === "delivery" || doc.orderNotes.checkout_method === 'pickup') {
-                          // console.log(doc)
-                          if (doc.orderNotes.checkout_method === "delivery") {
-
-                          }
-
-                          if (doc.orderNotes.checkout_method === "pickup") {
-
-                          }
-                          // var printerDB = db.get('printer')
-                          // printerDB.findOne({}, {}, function(err, printer) {
-                          // console.log(printer.printer_id)
-                          if (doc.note_attributes[1] != undefined) {
-                            // var options = {
-                            //   screenSize: {
-                            //     'width': 1350,
-                            //     'height': 2200
-                            //   }
-                            // }
-                            // var options2 = {
-                            //   'width': 1350,
-                            //   'height': 2200
-                            // }
-                            // console.log(doc._id)
-                            // webshot("https://admin.alsflowersmontgomery.com/order/pdf/" + doc._id, "./public/pdf/" + doc._id + ".pdf", options, function(err) {
-                            //   console.log(err)
-                            //   // setTimeout(function() {
-                            //   // 545151
-                            //   var formData = {
-                            //     "printer": 72408224,
-                            //     "title": "Order: " + doc.order_number,
-                            //     "contentType": "pdf_uri",
-                            //     "content": "https://api.alsflowersmontgomery.com/pdf/" + doc._id + ".pdf",
-                            //     "source": "api documentation!",
-                            //     "options": {
-                            //       "paper": "Legal (8.5 x 14 in)",
-                            //     }
-                            //   }
-                            //   var username = "7qPBLc9mtxCwF1vc53b4c774OhS5CbRMZfoxN3jy78A";
-                            //   var password = "";
-                            //   var url = "https://api.printnode.com/printjobs";
-                            //   var auth = "Basic " + new Buffer(username + ":" + password).toString("base64");
-                            //
-                            //   request.post({
-                            //       url: url,
-                            //       headers: {
-                            //         "Authorization": auth
-                            //       },
-                            //       json: true,
-                            //       body: formData
-                            //     },
-                            //     function(error, response, body) {
-                            //       if (error) {
-                            //         console.log(error)
-                            //         // setTimeout(function() {
-                            //         res.end();
-                            //         // }, 1000)
-                            //       } else {
-                                    // console.log(response)
-                                    console.log(moment().format('MMMM Do YYYY, h:mm a'));
-                                    console.log('NEW ORDER#:' + doc.order_number)
-                                    // setTimeout(function() {
-                                    res.end();
-                                    // }, 1000)
-                            //       }
-                            //     }
-                            //   );
-                            //
-                            //   // }, 4000)
-                            // });
-
-                          } else {
-                            res.end();
-                          }
-                          // })
-                        } else {
-                          res.send()
-                        }
-                      }
-                    }
-                  );
-                }
-              });
-            }
-          }
-        );
-
-      } else {
-        doc.note = nl2br(doc.note);
-        // console.log(doc.note);
-        doc.deliver_day = "";
-        if (doc.user_id) {
-
-        } else {
-          doc.user_id = "";
-        }
-        doc.orderNotes = {};
-
-        for (i = 0; i < doc.note_attributes.length; i++) {
-          var key = doc.note_attributes[i].name.replace(/ /g, "_").replace(/-/g, "_").toLowerCase();
-          var value = doc.note_attributes[i].value.toString();
-          doc.orderNotes[key] = value;
-          if (i === doc.note_attributes.length - 1) {
-            // console.log(doc.orderNotes)
-          }
-        }
-        if (doc.orderNotes.checkout_method === "delivery" || doc.orderNotes.checkout_method === 'pickup') {
-          // console.log(doc)
-          if (doc.orderNotes.checkout_method === "delivery") {
-
-          }
-
-          if (doc.orderNotes.checkout_method === "pickup") {
-
-          }
-          // var printerDB = db.get('printer')
-          // printerDB.findOne({}, {}, function(err, printer) {
-          // console.log(printer.printer_id)
-          if (doc.note_attributes[1] != undefined) {
-            // var options = {
-            //   screenSize: {
-            //     'width': 1350,
-            //     'height': 2200
-            //   }
-            // }
-            // var options2 = {
-            //   'width': 1350,
-            //   'height': 2200
-            // }
-            // // console.log(doc._id)
-            // webshot("https://admin.alsflowersmontgomery.com/order/pdf/" + doc._id, "./public/pdf/" + doc._id + ".pdf", options, function(err) {
-            //   console.log(err)
-            //   // setTimeout(function() {
-            //   // 545151
-            //   var formData = {
-            //     "printer": 72408224,
-            //     "title": "Order: " + doc.order_number,
-            //     "contentType": "pdf_uri",
-            //     "content": "https://api.alsflowersmontgomery.com/pdf/" + doc._id + ".pdf",
-            //     "source": "api documentation!",
-            //     "options": {
-            //       "paper": "Legal (8.5 x 14 in)",
-            //     }
-            //   }
-            //   var username = "7qPBLc9mtxCwF1vc53b4c774OhS5CbRMZfoxN3jy78A";
-            //   var password = "";
-            //   var url = "https://api.printnode.com/printjobs";
-            //   var auth = "Basic " + new Buffer(username + ":" + password).toString("base64");
-            //
-            //   request.post({
-            //       url: url,
-            //       headers: {
-            //         "Authorization": auth
-            //       },
-            //       json: true,
-            //       body: formData
-            //     },
-            //     function(error, response, body) {
-            //       if (error) {
-            //         console.log(error)
-            //         // setTimeout(function() {
-            //         res.end();
-            //         // }, 1000)
-            //       } else {
-                    // console.log(response)
-                    console.log(moment().format('MMMM Do YYYY, h:mm a'));
-                    console.log('NEW ORDER#:' + doc.order_number)
-                    // setTimeout(function() {
-                    res.end();
-                    // }, 1000)
-            //       }
-            //     }
-            //   );
-            //
-            //   // }, 4000)
-            // });
-
-          } else {
-            res.end();
-          }
-          // })
-        } else {
-          res.send()
-        }
-      }
-
-      ///////////////////////////////////////////////
-
-
-    } else {
-
-      var db = req.db;
-      var ordersDB = db.get('orders')
-      // ordersDB.insert(req.body)
-      // console.log(req.body)
-      var items = req.body.line_items;
-
-      // ordersDB.findOne({
-      //   "id": req.body.id
-      ordersDB.insert(req.body, function(err, doc) {
-
-
-
-        if (doc.source_name === 'subscription_contract') {
-          console.log('SUBSCRIPTION CODE 2')
-          var original_order = doc;
-          // console.log(doc.customer.id)
-          var username = "36274b5cf78a52bfa4c6780ba48a2fb1";
-          var password = "a26e549d188fe3459e1ed5b1c2cb1425";
-          var url = "https://als-flowers.myshopify.com/admin/api/2021-01/customers/" + doc.customer.id + "/orders.json?status=any";
-          var auth = "Basic " + new Buffer(username + ":" + password).toString("base64");
-
-          request.get({
-              url: url,
-              headers: {
-                "Authorization": auth
-              },
-            },
-            function(error, response, body) {
-              // console.log(response.headers.date)
-              // console.log(body)
-              if (error) {
-                console.log(error)
-                res.send('index', {
-                  "message": "THERE WAS AN ISSUE PRINTING, LET TREY KNOW IMMEDIATELY"
-                })
-              } else {
-                var orders = JSON.parse(body).orders;
-                // var subscription_number = orders.length + 1;
-                // var subscription_tag = "Subscription " + subscription_number;
-                var subscription_tag2 = "Subscription";
-                // console.log("Orders: " + subscription_number)
-                orders.slice(1).forEach(order => {
-                  // console.log(order.shipping_lines[0].title)
-                  if (order.shipping_lines[0].title === 'Subscription shipping' || order.shipping_lines[0].title === 'Subscription · Shipping') {
-                    var today = moment().format('YYYY/MM/DD')
-                    var today_tag = moment().format('MM/DD/YYYY')
-                    var order_tags = order.tags.split(',').slice(1);
-                    console.log('OLD TAGS: ' + order_tags)
-                    // console.log(order.note_attributes)
-                    // console.log(order.tags)
-                    // console.log(original_order.id)
-                    order_tags.push(today_tag)
-                    order_tags.push(subscription_tag2)
-                    // order_tags.join()
-                    var new_tags = order_tags.join()
-                    // console.log(new_tags)
-                    console.log('NEW TAGS: ' + new_tags)
-
-                    console.log('TODAY: ' + today)
-                    var dateIndex = order.note_attributes.findIndex(x => x.name === 'Delivery-Date');
-                    var dateIndex2 = order.note_attributes.findIndex(x => x.name === 'Pickup-Date');
-                    // console.log(dateIndex)
-                    if (dateIndex > -1) {
-                      order.note_attributes[dateIndex] = {
-                        "name": 'Delivery-Date',
-                        "value": today
-                      }
-                    }
-                    if (dateIndex2 > -1) {
-                      order.note_attributes[dateIndex2] = {
-                        "name": 'Pickup-Date',
-                        "value": today
-                      }
-                    }
-
-                    var formData2 = {
-                      "order": {
-                        "id": original_order.id,
-                        "note": order.note,
-                        "tags": new_tags,
-                        "note_attributes": order.note_attributes
-                      }
-                    }
-                    var username2 = "36274b5cf78a52bfa4c6780ba48a2fb1";
-                    var password2 = "a26e549d188fe3459e1ed5b1c2cb1425";
-                    var url2 = "https://als-flowers.myshopify.com/admin/api/2021-01/orders/" + original_order.id + ".json";
-                    var auth2 = "Basic " + new Buffer(username2 + ":" + password2).toString("base64");
-
-                    request.put({
-                        url: url2,
-                        headers: {
-                          "Authorization": auth2
-                        },
-                        json: true,
-                        body: formData2
-                      },
-                      function(error, response, body) {
-                        // console.log(response.headers.date)
-                        // console.log(body)
-                        if (error) {
-                          console.log(error)
-                        } else {
-                          doc.note = nl2br(doc.note);
-                          // console.log(doc.note);
-                          doc.deliver_day = "";
-                          if (doc.user_id) {
-
-                          } else {
-                            doc.user_id = "";
-                          }
-                          doc.orderNotes = {};
-
-                          for (i = 0; i < doc.note_attributes.length; i++) {
-                            var key = doc.note_attributes[i].name.replace(/ /g, "_").replace(/-/g, "_").toLowerCase();
-                            var value = doc.note_attributes[i].value.toString();
-                            doc.orderNotes[key] = value;
-                            if (i === doc.note_attributes.length - 1) {
-                              // console.log(doc.orderNotes)
-                            }
-                          }
-                          if (doc.orderNotes.checkout_method === "delivery" || doc.orderNotes.checkout_method === 'pickup') {
-                            // console.log(doc)
-                            if (doc.orderNotes.checkout_method === "delivery") {
-
-                            }
-
-                            if (doc.orderNotes.checkout_method === "pickup") {
-
-                            }
-                            // var printerDB = db.get('printer')
-                            // printerDB.findOne({}, {}, function(err, printer) {
-                            // console.log(printer.printer_id)
-                            if (doc.note_attributes[1] != undefined) {
-                              // var options = {
-                              //   screenSize: {
-                              //     'width': 1350,
-                              //     'height': 2200
-                              //   }
-                              // }
-                              // var options2 = {
-                              //   'width': 1350,
-                              //   'height': 2200
-                              // }
-                              // // console.log(doc._id)
-                              // webshot("https://admin.alsflowersmontgomery.com/order/pdf/" + doc._id, "./public/pdf/" + doc._id + ".pdf", options, function(err) {
-                              //   console.log(err)
-                              //   // setTimeout(function() {
-                              //   // 545151
-                              //   var formData = {
-                              //     "printer": 72408224,
-                              //     "title": "Order: " + doc.order_number,
-                              //     "contentType": "pdf_uri",
-                              //     "content": "https://api.alsflowersmontgomery.com/pdf/" + doc._id + ".pdf",
-                              //     "source": "api documentation!",
-                              //     "options": {
-                              //       "paper": "Legal (8.5 x 14 in)",
-                              //     }
-                              //   }
-                              //   var username = "7qPBLc9mtxCwF1vc53b4c774OhS5CbRMZfoxN3jy78A";
-                              //   var password = "";
-                              //   var url = "https://api.printnode.com/printjobs";
-                              //   var auth = "Basic " + new Buffer(username + ":" + password).toString("base64");
-                              //
-                              //   request.post({
-                              //       url: url,
-                              //       headers: {
-                              //         "Authorization": auth
-                              //       },
-                              //       json: true,
-                              //       body: formData
-                              //     },
-                              //     function(error, response, body) {
-                              //       if (error) {
-                              //         console.log(error)
-                              //         // setTimeout(function() {
-                              //         res.end();
-                              //         // }, 1000)
-                              //       } else {
-                                      // console.log(response)
-                                      console.log(moment().format('MMMM Do YYYY, h:mm a'));
-                                      console.log('NEW ORDER#:' + doc.order_number)
-                                      // setTimeout(function() {
-                                      res.end();
-                                      // }, 1000)
-                              //       }
-                              //     }
-                              //   );
-                              //
-                              //   // }, 4000)
-                              // });
-
-                            } else {
-                              res.end();
-                            }
-                            // })
-                          } else {
-                            res.send()
-                          }
-                        }
-                      }
-                    );
-                  }
-                });
-              }
-            }
-          );
-
-        } else {
-          doc.note = nl2br(doc.note);
-          // console.log(doc.note);
-          doc.deliver_day = "";
-          if (doc.user_id) {
-
-          } else {
-            doc.user_id = "";
-          }
-          doc.orderNotes = {};
-
-          for (i = 0; i < doc.note_attributes.length; i++) {
-            var key = doc.note_attributes[i].name.replace(/ /g, "_").replace(/-/g, "_").toLowerCase();
-            var value = doc.note_attributes[i].value.toString();
-            doc.orderNotes[key] = value;
-            if (i === doc.note_attributes.length - 1) {
-              // console.log(doc.orderNotes)
-            }
-          }
-          if (doc.orderNotes.checkout_method === "delivery" || doc.orderNotes.checkout_method === 'pickup') {
-            // console.log(doc)
-            if (doc.orderNotes.checkout_method === "delivery") {
-
-            }
-
-            if (doc.orderNotes.checkout_method === "pickup") {
-
-            }
-            // var printerDB = db.get('printer')
-            // printerDB.findOne({}, {}, function(err, printer) {
-            // console.log(printer.printer_id)
-            if (doc.note_attributes[1] != undefined) {
-              // var options = {
-              //   screenSize: {
-              //     'width': 1350,
-              //     'height': 2200
-              //   }
-              // }
-              // var options2 = {
-              //   'width': 1350,
-              //   'height': 2200
-              // }
-              // // console.log(doc._id)
-              // webshot("https://admin.alsflowersmontgomery.com/order/pdf/" + doc._id, "./public/pdf/" + doc._id + ".pdf", options, function(err) {
-              //   console.log(err)
-              //   // setTimeout(function() {
-              //   // 545151
-              //   var formData = {
-              //     "printer": 72408224,
-              //     "title": "Order: " + doc.order_number,
-              //     "contentType": "pdf_uri",
-              //     "content": "https://api.alsflowersmontgomery.com/pdf/" + doc._id + ".pdf",
-              //     "source": "api documentation!",
-              //     "options": {
-              //       "paper": "Legal (8.5 x 14 in)",
-              //     }
-              //   }
-              //   var username = "7qPBLc9mtxCwF1vc53b4c774OhS5CbRMZfoxN3jy78A";
-              //   var password = "";
-              //   var url = "https://api.printnode.com/printjobs";
-              //   var auth = "Basic " + new Buffer(username + ":" + password).toString("base64");
-              //
-              //   request.post({
-              //       url: url,
-              //       headers: {
-              //         "Authorization": auth
-              //       },
-              //       json: true,
-              //       body: formData
-              //     },
-              //     function(error, response, body) {
-              //       if (error) {
-              //         console.log(error)
-              //         // setTimeout(function() {
-              //         res.end();
-              //         // }, 1000)
-              //       } else {
-                      // console.log(response)
-                      console.log(moment().format('MMMM Do YYYY, h:mm a'));
-                      console.log('NEW ORDER#:' + doc.order_number)
-                      // setTimeout(function() {
-                      res.end();
-                      // }, 1000)
-              //       }
-              //     }
-              //   );
-              //
-              //   // }, 4000)
-              // });
-
-            } else {
-              res.end();
-            }
-            // })
-          } else {
-            res.send()
-          }
-        }
-      })
-    }
-  })
-
-
-
+router.post('/new3/order', function(req, res) {
+  console.log('POST /new3/order deprecated — use POST /new/order');
+  res.status(410).send('deprecated — use POST /new/order');
 });
+
 
 
 function isLoggedIn(req, res, next) {
