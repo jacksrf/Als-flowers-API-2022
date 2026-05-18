@@ -1,5 +1,15 @@
 # Deploy — safe reliability release
 
+## One command (on the server)
+
+```bash
+bash ~/deploy/API-als-flowers-2022/scripts/deploy-prod.sh
+```
+
+Pulls latest `master`, tags rollback, `npm install`, PM2 restart with memory limits, and prints status.
+
+---
+
 ## Phase 0 (server, before or after code deploy)
 
 ```bash
