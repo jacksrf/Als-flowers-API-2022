@@ -429,240 +429,11 @@ router.get('/subscriptions', function(req, res, next) {
   })
 })
 
-router.post('/new2/order', function(req, res, next) {
-  var db = req.db;
-  var ordersDB = db.get('orders')
-  var order_number = req.body.name;
-  ordersDB.findOne({
-    "name": order_number
-  }, {}, function(err, doc) {
-    console.log('*/-----------NEW ORDER------------/*')
-    console.log(err)
-    // console.log(doc)
-    if (doc) {
-      var db = req.db;
-      var ordersDB = db.get('orders')
-      // ordersDB.insert(req.body)
-      // // console.log(req.body)
-      var items = req.body.line_items;
-
-      // ordersDB.findOne({
-      //   "id": req.body.id
-      ordersDB.insert(req.body, function(err, doc) {
-        doc.note = nl2br(doc.note);
-        // // console.log(doc.note);
-        doc.deliver_day = "";
-        if (doc.user_id) {
-
-        } else {
-          doc.user_id = "";
-        }
-        doc.orderNotes = {};
-
-        for (i = 0; i < doc.note_attributes.length; i++) {
-          var key = doc.note_attributes[i].name.replace(/ /g, "_").replace(/-/g, "_").toLowerCase();
-          var value = doc.note_attributes[i].value.toString();
-          doc.orderNotes[key] = value;
-          if (i === doc.note_attributes.length - 1) {
-            // // console.log(doc.orderNotes)
-          }
-        }
-        if (doc.orderNotes.checkout_method === "delivery" || doc.orderNotes.checkout_method === 'pickup') {
-          // // console.log(doc)
-          if (doc.orderNotes.checkout_method === "delivery") {
-
-          }
-
-          if (doc.orderNotes.checkout_method === "pickup") {
-
-          }
-          var printerDB = db.get('printer')
-          printerDB.findOne({}, {}, function(err, printer) {
-            // // console.log(printer.printer_id)
-            if (doc.note_attributes[1] != undefined) {
-
-              var options = {
-          screenSize: {
-            'width': 1350,
-            'height': 2200
-          },
-          phantomPath: require('phantomjs2').path,
-          phantomConfig: { 'ignore-ssl-errors': 'true'}
-        }
-        var options2 = {
-          'width': 1350,
-          'height': 2200
-        }
-              // // console.log(doc._id)
-              webshot("https://admin.alsflowersmontgomery.com/order/pdf/" + doc._id, "./public/pdf/" + doc._id + ".pdf", options, function(err) {
-                console.log(err)
-                // setTimeout(function() {
-                // 545151
-                var formData = {
-                  "printer": 72408224,
-                  "title": "Order: " + doc.order_number,
-                  "contentType": "pdf_uri",
-                  "content": "https://api.alsflowersmontgomery.com/pdf/" + doc._id + ".pdf",
-                  "source": "api documentation!",
-                  "options": {
-                    "paper": "Legal (8.5 x 14 in)",
-                  }
-                }
-                var username = "7qPBLc9mtxCwF1vc53b4c774OhS5CbRMZfoxN3jy78A";
-                var password = "";
-                var url = "https://api.printnode.com/printjobs";
-                var auth = "Basic " + new Buffer(username + ":" + password).toString("base64");
-
-                request.post({
-                    url: url,
-                    headers: {
-                      "Authorization": auth
-                    },
-                    json: true,
-                    body: formData
-                  },
-                  function(error, response, body) {
-                    if (error) {
-                      console.log(error)
-                      // setTimeout(function() {
-                      res.end();
-                      // }, 1000)
-                    } else {
-                      // console.log(response)
-                      console.log(moment().format('MMMM Do YYYY, h:mm a'));
-                      console.log('NEW ORDER#:' + doc.order_number)
-                      // fs.unlink("./public/pdf/" + doc._id + ".pdf", (err) => {
-                      //     if (err) {
-                      //         throw err;
-                      //     }
-                      //
-                      //     console.log("Delete File successfully.");
-                      // });
-                      // setTimeout(function() {
-                      res.end();
-                      // }, 1000)
-                    }
-                  }
-                );
-
-                // }, 4000)
-              });
-
-            } else {
-              res.end();
-            }
-          })
-        } else {
-          res.send()
-        }
-      })
-    } else {
-      doc.note = nl2br(doc.note);
-      // console.log(doc.note);
-      doc.deliver_day = "";
-      if (doc.user_id) {
-
-      } else {
-        doc.user_id = "";
-      }
-      doc.orderNotes = {};
-
-      for (i = 0; i < doc.note_attributes.length; i++) {
-        var key = doc.note_attributes[i].name.replace(/ /g, "_").replace(/-/g, "_").toLowerCase();
-        var value = doc.note_attributes[i].value.toString();
-        doc.orderNotes[key] = value;
-        if (i === doc.note_attributes.length - 1) {
-          // console.log(doc.orderNotes)
-
-        }
-      }
-      if (doc.orderNotes.checkout_method === "delivery" || doc.orderNotes.checkout_method === 'pickup') {
-        // console.log(doc.number)
-        var printerDB = db.get('printer')
-        printerDB.findOne({}, {}, function(err, printer) {
-          // console.log(printer.printer_id)
-          if (doc.note_attributes[1] != undefined) {
-            var options = {
-          screenSize: {
-            'width': 1350,
-            'height': 2200
-          },
-          phantomPath: require('phantomjs2').path,
-          Config: { 'ignore-ssl-errors': 'true'}
-        }
-        var options2 = {
-          'width': 1350,
-          'height': 2200
-        }
-            // console.log(doc._id)
-            webshot("https://admin.alsflowersmontgomery.com/order/pdf/" + doc._id, "./public/pdf/" + doc._id + ".pdf", options, function(err) {
-              console.log(err)
-              // setTimeout(function() {
-              // 545151
-              var formData = {
-                "printer": 72408224,
-                "title": "Order: " + doc.order_number,
-                "contentType": "pdf_uri",
-                "content": "https://api.alsflowersmontgomery.com/pdf/" + doc._id + ".pdf",
-                "source": "api documentation!",
-                "options": {
-                  "paper": "Legal (8.5 x 14 in)",
-                }
-              }
-              var username = "7qPBLc9mtxCwF1vc53b4c774OhS5CbRMZfoxN3jy78A";
-              var password = "";
-              var url = "https://api.printnode.com/printjobs";
-              var auth = "Basic " + new Buffer(username + ":" + password).toString("base64");
-
-              request.post({
-                  url: url,
-                  headers: {
-                    "Authorization": auth
-                  },
-                  json: true,
-                  body: formData
-                },
-                function(error, response, body) {
-                  if (error) {
-                    console.log(error)
-                    // setTimeout(function() {
-                    res.end();
-                    // }, 1000)
-                  } else {
-                    // console.log(response)
-                    console.log(moment().format('MMMM Do YYYY, h:mm a'));
-                    console.log('NEW ORDER#:' + doc.order_number)
-                    // fs.unlink("./public/pdf/" + doc._id + ".pdf", (err) => {
-                    //     if (err) {
-                    //         throw err;
-                    //     }
-                    //
-                    //     console.log("Delete File successfully.");
-                    // });
-                    // setTimeout(function() {
-                    res.end();
-                    // }, 1000)
-                  }
-                }
-              );
-
-              // }, 4000)
-            });
-          } else {
-            res.end();
-          }
-        })
-      } else {
-        res.send();
-      }
-      // res.send();
-    }
-  })
-
-
-  // }
-
+router.post('/new2/order', function(req, res) {
+  console.log('POST /new2/order deprecated — use POST /new/order');
+  res.status(410).send('deprecated — use POST /new/order');
 });
+
 
 
 router.get('/order/reprint/pdf/:id', isLoggedIn, function(req, res, next) {
@@ -671,27 +442,53 @@ router.get('/order/reprint/pdf/:id', isLoggedIn, function(req, res, next) {
   var ordersDB = db.get('orders');
   var responded = false;
 
+  function escapeHtml(text) {
+    return String(text)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
   function renderPrintResult(message) {
     if (responded) {
       return;
     }
     responded = true;
-    res.render('index', { message: message });
+    console.log('REPRINT RESULT: ' + message);
+    var safe = escapeHtml(message);
+    res.send(
+      '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Print</title></head>' +
+      '<body style="padding:50px;font-family:Helvetica,Arial,sans-serif">' +
+      '<h1>' + safe + '</h1>' +
+      '<p><a href="/orders">Return to orders</a></p></body></html>'
+    );
   }
 
-  ordersDB.findOne({ "_id": id }, {}, function(err, doc) {
+  var queryId = id;
+  try {
+    queryId = mongo.ObjectID(id);
+  } catch (objectIdErr) {
+    console.log('REPRINT invalid id: ' + id);
+  }
+
+  console.log('REPRINT start: ' + id);
+  ordersDB.findOne({ '_id': queryId }, {}, function(err, doc) {
     if (err) {
       console.log(err);
       return renderPrintResult('THERE WAS AN ISSUE PRINTING, LET TREY KNOW IMMEDIATELY');
     }
     if (!doc) {
+      console.log('REPRINT order not found: ' + id);
       return renderPrintResult('ORDER NOT FOUND — COULD NOT PRINT.');
     }
-    if (!doc.note_attributes || !Array.isArray(doc.note_attributes) || doc.note_attributes.length < 2) {
+    if (!doc.note_attributes || doc.note_attributes[1] === undefined) {
+      console.log('REPRINT missing note_attributes for order: ' + doc.order_number);
       return renderPrintResult('THIS ORDER IS MISSING CHECKOUT DETAILS — CANNOT PRINT. TRY EDITING THE ORDER FIRST.');
     }
 
     var orderId = doc._id.toString ? doc._id.toString() : doc._id;
+    console.log('REPRINT webshot start for order #' + doc.order_number);
     var options = {
       screenSize: {
         'width': 1350,
