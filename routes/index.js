@@ -666,114 +666,86 @@ router.post('/new2/order', function(req, res, next) {
 
 
 router.get('/order/reprint/pdf/:id', isLoggedIn, function(req, res, next) {
-  // var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-  // console.log(ip)
-  var key = req.query.key;
-  // console.log(key)
   var id = req.params.id;
   var db = req.db;
-  var ordersDB = db.get('orders')
-  // if (key != undefined) {
-  ordersDB.findOne({
-    "_id": id
-  }, {}, function(err, doc) {
-    if (err) {
-      console.log(err)
+  var ordersDB = db.get('orders');
+  var responded = false;
+
+  function renderPrintResult(message) {
+    if (responded) {
+      return;
     }
-    // console.log(doc)
-    var printerDB = db.get('printer')
-    printerDB.findOne({}, {}, function(err, printer) {
-      // console.log(doc.updated_at)
-      var isafter = moment(doc.updated_at).isAfter('2018-06-01T00:00:00+00:00');
-      // console.log(isafter)
-      // console.log(doc.note_attributes)
-      // if (isafter === "true" || isafter === true) {
-      // console.log(doc.note_attributes)
-      if (doc.note_attributes[1] != undefined) {
-        var options = {
-          screenSize: {
-            'width': 1350,
-            'height': 2200
-          },
-          phantomPath: require('phantomjs2').path,
-          phantomConfig: { 'ignore-ssl-errors': 'true'}
-        }
-        var options2 = {
-          'width': 1350,
-          'height': 2200
-        }
-        // console.log(doc._id)
-        webshot("https://admin.alsflowersmontgomery.com/order/pdf/" + doc._id, "./public/pdf/" + doc._id + ".pdf", options, function(err) {
-          console.log(err)
+    responded = true;
+    res.render('index', { message: message });
+  }
 
-          setTimeout(function() {
-            // console.log(printer.printer_id)
-            var formData = {
-              // "printer": printer.printer_id,
-              "printer": 72408224,
-              "title": "Order: " + doc.order_number,
-              "contentType": "pdf_uri",
-              "content": "https://api.alsflowersmontgomery.com/pdf/" + doc._id + ".pdf?t=" + Math.random(),
-              "source": "api documentation!",
-              "options": {
-                "paper": "Legal (8.5 x 14 in)",
-              }
+  ordersDB.findOne({ "_id": id }, {}, function(err, doc) {
+    if (err) {
+      console.log(err);
+      return renderPrintResult('THERE WAS AN ISSUE PRINTING, LET TREY KNOW IMMEDIATELY');
+    }
+    if (!doc) {
+      return renderPrintResult('ORDER NOT FOUND — COULD NOT PRINT.');
+    }
+    if (!doc.note_attributes || !Array.isArray(doc.note_attributes) || doc.note_attributes.length < 2) {
+      return renderPrintResult('THIS ORDER IS MISSING CHECKOUT DETAILS — CANNOT PRINT. TRY EDITING THE ORDER FIRST.');
+    }
+
+    var orderId = doc._id.toString ? doc._id.toString() : doc._id;
+    var options = {
+      screenSize: {
+        'width': 1350,
+        'height': 2200
+      },
+      phantomPath: require('phantomjs2').path,
+      phantomConfig: { 'ignore-ssl-errors': 'true' }
+    };
+
+    webshot(
+      'https://admin.alsflowersmontgomery.com/order/pdf/' + orderId,
+      './public/pdf/' + orderId + '.pdf',
+      options,
+      function(shotErr) {
+        if (shotErr) {
+          console.log(shotErr);
+          return renderPrintResult('PDF GENERATION FAILED — LET TREY KNOW. (' + shotErr.message + ')');
+        }
+
+        setTimeout(function() {
+          var formData = {
+            'printer': 72408224,
+            'title': 'Order: ' + doc.order_number,
+            'contentType': 'pdf_uri',
+            'content': 'https://api.alsflowersmontgomery.com/pdf/' + orderId + '.pdf?t=' + Math.random(),
+            'source': 'api documentation!',
+            'options': {
+              'paper': 'Legal (8.5 x 14 in)'
             }
-            var username = "7qPBLc9mtxCwF1vc53b4c774OhS5CbRMZfoxN3jy78A";
-            var password = "";
-            var url = "https://api.printnode.com/printjobs";
-            var auth = "Basic " + new Buffer(username + ":" + password).toString("base64");
+          };
+          var username = '7qPBLc9mtxCwF1vc53b4c774OhS5CbRMZfoxN3jy78A';
+          var password = '';
+          var url = 'https://api.printnode.com/printjobs';
+          var auth = 'Basic ' + new Buffer(username + ':' + password).toString('base64');
 
-            request.post({
-                url: url,
-                headers: {
-                  "Authorization": auth
-                },
-                json: true,
-                body: formData
-              },
-              function(error, response, body) {
-                // console.log(response.headers.date)
-                // console.log(body)
-                if (error) {
-                  console.log(error)
-                  res.send('index', {
-                    "message": "THERE WAS AN ISSUE PRINTING, LET TREY KNOW IMMEDIATELY"
-                  })
-                } else {
-                  // console.log(response)
-                  console.log('REPRINT')
-                  console.log(moment().format('MMMM Do YYYY, h:mm a'));
-                  console.log('REPRINTED ------ ORDER#:' + doc.order_number)
-                  // fs.unlink("./public/pdf/" + doc._id + ".pdf", (err) => {
-                  //     if (err) {
-                  //         throw err;
-                  //     }
-                  //
-                  //     console.log("Delete File successfully.");
-                  // });
-                  res.render('index', {
-                    "message": "COMPLETED! YOURE PRINT SHOULD BECOMING SOON."
-                  })
-                }
-              }
-            );
-
-          }, 4000)
-        });
-
-      } else {
-        res.send()
+          request.post({
+            url: url,
+            headers: { 'Authorization': auth },
+            json: true,
+            body: formData
+          }, function(error, response, body) {
+            if (error) {
+              console.log(error);
+              return renderPrintResult('THERE WAS AN ISSUE PRINTING, LET TREY KNOW IMMEDIATELY');
+            }
+            console.log('REPRINT');
+            console.log(moment().format('MMMM Do YYYY, h:mm a'));
+            console.log('REPRINTED ------ ORDER#:' + doc.order_number);
+            renderPrintResult('COMPLETED! YOURE PRINT SHOULD BECOMING SOON.');
+          });
+        }, 4000);
       }
-      // } else {
-      //   res.send()
-      // }
-
-    });
-
-  })
-  // }
-
+    );
+  });
 })
 
 router.get('/order/json/:id', function(req, res, next) {
