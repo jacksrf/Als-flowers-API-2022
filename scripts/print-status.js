@@ -51,6 +51,7 @@ async function main() {
 
     var jobIndex = indexJobs(pnJobs);
     var stateIndex = indexStates(pnStates);
+    var titleIndex = indexJobsByOrderNumber(pnJobs, stateIndex);
 
     var query = buildOrderQuery(since, onlyOrderNumber);
     var orders = await db.get('orders').find(query, {
@@ -72,7 +73,7 @@ async function main() {
       }
     });
 
-    var report = buildReport(orders, jobIndex, stateIndex);
+    var report = buildReport(orders, jobIndex, stateIndex, titleIndex);
 
     if (jsonOutput) {
       console.log(JSON.stringify(report, null, 2));
@@ -273,6 +274,41 @@ function indexJobs(jobs) {
   return idx;
 }
 
+function indexJobsByOrderNumber(jobs, stateIndex) {
+  var idx = {};
+  for (var i = 0; i < jobs.length; i++) {
+    var job = jobs[i];
+    if (!job || !job.title) {
+      continue;
+    }
+    var match = /Order:\s*(\d+)/i.exec(job.title);
+    if (!match) {
+      continue;
+    }
+    var orderNumber = parseInt(match[1], 10);
+    if (!orderNumber) {
+      continue;
+    }
+    var state = stateIndex[job.id] ? stateIndex[job.id].state : null;
+    var jobTs = job.createTimestamp ? new Date(job.createTimestamp).getTime() : 0;
+
+    var existing = idx[orderNumber];
+    var betterByState = state === 'done' && (!existing || existing.state !== 'done');
+    var newerWithSameState = existing && existing.state === state && jobTs > existing.ts;
+    var firstSeen = !existing;
+
+    if (firstSeen || betterByState || newerWithSameState) {
+      idx[orderNumber] = {
+        jobId: job.id,
+        state: state,
+        ts: jobTs,
+        title: job.title
+      };
+    }
+  }
+  return idx;
+}
+
 function indexStates(stateGroups) {
   var idx = {};
   for (var i = 0; i < stateGroups.length; i++) {
@@ -313,7 +349,7 @@ function shouldHavePrinted(order) {
   return notes.checkout_method === 'delivery' || notes.checkout_method === 'pickup';
 }
 
-function buildReport(orders, jobIndex, stateIndex) {
+function buildReport(orders, jobIndex, stateIndex, titleIndex) {
   var rows = [];
   var seenJobIds = {};
 
@@ -321,11 +357,18 @@ function buildReport(orders, jobIndex, stateIndex) {
     var order = orders[i];
     var channel = orderChannel.getOrderChannel(order);
     var jobId = order.printnode_job_id || null;
+    var matchedBy = jobId ? 'id' : null;
+
+    if (!jobId && order.order_number && titleIndex && titleIndex[order.order_number]) {
+      jobId = titleIndex[order.order_number].jobId;
+      matchedBy = 'title';
+    }
+
     var pnState = jobId && stateIndex[jobId] ? stateIndex[jobId].state : null;
     var pnMessage = jobId && stateIndex[jobId] ? stateIndex[jobId].message : null;
     var pnTimestamp = jobId && stateIndex[jobId] ? stateIndex[jobId].createTimestamp : null;
     var jobExists = jobId ? !!jobIndex[jobId] : false;
-    var mongoStatus = order.print_status || (order.printed_at ? 'done' : (jobId ? 'queued' : 'none'));
+    var mongoStatus = order.print_status || (order.printed_at ? 'done' : (order.printnode_job_id ? 'queued' : 'none'));
 
     if (jobId) {
       seenJobIds[jobId] = true;
@@ -341,6 +384,7 @@ function buildReport(orders, jobIndex, stateIndex) {
       channelLabel: channel.label,
       source: order.source_name || '',
       jobId: jobId,
+      matchedBy: matchedBy,
       printnodeState: pnState,
       printnodeMessage: pnMessage,
       printnodeTimestamp: pnTimestamp,
@@ -469,14 +513,15 @@ function printReport(report) {
   if (visible.length === 0) {
     console.log('No actionable rows. Pass --verbose to see OK rows too.');
   } else {
-    var header = padRight('ORDER#', 9) + padRight('CHANNEL', 9) + padRight('JOB', 12) + padRight('PRINTNODE', 14) + padRight('MONGO', 12) + padRight('ACTION', 12) + 'REASON';
+    var header = padRight('ORDER#', 9) + padRight('CHANNEL', 9) + padRight('JOB', 12) + padRight('MATCH', 7) + padRight('PRINTNODE', 14) + padRight('MONGO', 12) + padRight('ACTION', 12) + 'REASON';
     console.log(header);
-    console.log(repeat('-', 110));
+    console.log(repeat('-', 120));
     for (var i = 0; i < visible.length; i++) {
       var r = visible[i];
       var line = padRight(String(r.orderNumber || r.orderName || '-'), 9) +
         padRight(r.channelLabel || '-', 9) +
         padRight(r.jobId ? String(r.jobId) : '-', 12) +
+        padRight(r.matchedBy || '-', 7) +
         padRight(r.printnodeState || (r.jobId && !r.jobFoundInList ? 'purged' : '-'), 14) +
         padRight(r.mongoStatus || '-', 12) +
         padRight(r.action, 12) +
