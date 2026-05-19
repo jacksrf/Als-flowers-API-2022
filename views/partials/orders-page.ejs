@@ -1,72 +1,122 @@
 <%- include('head', { title: typeof pageTitle !== 'undefined' ? pageTitle : 'Orders' }) %>
 <%- include('nav') %>
 
-<main class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-  <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-    <div>
-      <h1 class="text-2xl font-semibold tracking-tight"><%= typeof pageTitle !== 'undefined' ? pageTitle : 'Orders' %></h1>
-      <% if (typeof pageSubtitle !== 'undefined' && pageSubtitle) { %>
-        <p class="mt-1 text-sm text-muted-foreground"><%= pageSubtitle %></p>
+<main class="app-main">
+  <div class="page-heading">
+    <h1 class="page-title"><%= typeof pageTitle !== 'undefined' ? pageTitle : 'Orders' %></h1>
+    <% if (typeof pageSubtitle !== 'undefined' && pageSubtitle) { %>
+      <p class="page-description"><%= pageSubtitle %></p>
+    <% } else { %>
+      <p class="page-description">Manage fulfillment, printing, and workflow.</p>
+    <% } %>
+  </div>
+
+  <% var s = typeof summary !== 'undefined' ? summary : { total: 0, arrangements: 0, unprinted: 0, pending: 0 }; %>
+  <div class="stats-grid">
+    <div class="stat-item">
+      <p class="stat-item-label">In view</p>
+      <p class="stat-item-value"><%= s.total %></p>
+    </div>
+    <div class="stat-item">
+      <p class="stat-item-label">Arrangements</p>
+      <p class="stat-item-value text-amber-600"><%= s.arrangements %></p>
+    </div>
+    <div class="stat-item">
+      <p class="stat-item-label">Need print</p>
+      <p class="stat-item-value text-sky-600"><%= s.unprinted %></p>
+    </div>
+    <div class="stat-item">
+      <p class="stat-item-label">Pending</p>
+      <p class="stat-item-value text-orange-600"><%= s.pending %></p>
+    </div>
+  </div>
+
+  <% var filters = [
+    { key: 'active', label: 'Active' },
+    { key: 'all', label: 'All' },
+    { key: 'arrangement', label: 'Arrangements' },
+    { key: 'other', label: 'Other' },
+    { key: 'complete', label: 'Complete' }
+  ]; %>
+  <% var baseUrl = typeof listBaseUrl !== 'undefined' ? listBaseUrl : '/orders'; %>
+  <% var currentFilter = typeof filter !== 'undefined' ? filter : 'active'; %>
+
+  <div class="card">
+    <div class="card-header pb-4">
+      <h2 class="card-title text-base">Filters &amp; search</h2>
+      <p class="card-description">Narrow the list or jump to a specific date.</p>
+    </div>
+    <div class="card-content space-y-4">
+      <div class="tabs-list flex-wrap h-auto gap-1 p-1">
+        <% for (var fi = 0; fi < filters.length; fi++) { %>
+          <% var f = filters[fi]; %>
+          <a href="<%= baseUrl %>?filter=<%= f.key %>"
+             class="<%= currentFilter === f.key ? 'tabs-trigger-active' : 'tabs-trigger-inactive' %>">
+            <%= f.label %>
+          </a>
+        <% } %>
+      </div>
+
+      <% if (typeof showDateSearch === 'undefined' || showDateSearch) { %>
+        <div class="separator-h"></div>
+        <div class="toolbar-grid">
+          <form action="/orders/search" method="post" class="space-y-2">
+            <label class="label" for="order_search">Search</label>
+            <div class="flex gap-2">
+              <input class="input" id="order_search" name="order" placeholder="Order # or customer name" type="text" autocomplete="off" />
+              <button type="submit" class="btn-default shrink-0">Search</button>
+            </div>
+          </form>
+          <form action="" method="post" id="date_form" class="space-y-2">
+            <label class="label" for="order_date">By date</label>
+            <div class="flex gap-2">
+              <input class="input" id="order_date" name="date" type="date" />
+              <button type="button" id="search_day" class="btn-outline shrink-0">Go</button>
+            </div>
+          </form>
+        </div>
       <% } %>
     </div>
-    <% if (typeof showDateSearch === 'undefined' || showDateSearch) { %>
-      <form action="/orders/search" method="post" class="flex w-full max-w-md gap-2 sm:w-auto">
-        <input class="input flex-1" name="order" placeholder="Order # or customer name" type="text" />
-        <button type="submit" class="btn-primary">Search</button>
-      </form>
-    <% } %>
   </div>
 
-  <% if (typeof showDateSearch === 'undefined' || showDateSearch) { %>
-    <form action="" method="post" id="date_form" class="mb-4 flex max-w-md gap-2">
-      <input class="input flex-1" name="date" type="date" />
-      <button type="button" id="search_day" class="btn-outline">By date</button>
-    </form>
-  <% } %>
-
-  <div class="mb-4 flex flex-wrap gap-2">
-    <% var filters = [
-      { key: 'active', label: 'Active' },
-      { key: 'all', label: 'All' },
-      { key: 'arrangement', label: 'Arrangements' },
-      { key: 'other', label: 'Other' },
-      { key: 'complete', label: 'Complete' }
-    ]; %>
-    <% var baseUrl = typeof listBaseUrl !== 'undefined' ? listBaseUrl : '/orders'; %>
-    <% for (var fi = 0; fi < filters.length; fi++) { %>
-      <% var f = filters[fi]; %>
-      <a href="<%= baseUrl %>?filter=<%= f.key %>"
-         class="<%= (typeof filter !== 'undefined' && filter === f.key) ? 'btn-primary btn-sm' : 'btn-outline btn-sm' %>">
-        <%= f.label %>
-      </a>
-    <% } %>
-  </div>
-
-  <div class="card overflow-hidden">
-    <div class="overflow-x-auto">
-      <table class="w-full text-sm">
-        <thead>
-          <tr class="border-b bg-muted/50">
-            <th class="h-10 px-3 text-left font-medium text-muted-foreground">Order</th>
-            <th class="h-10 px-3 text-left font-medium text-muted-foreground">Type</th>
-            <th class="h-10 px-3 text-left font-medium text-muted-foreground">Fulfillment</th>
-            <th class="h-10 px-3 text-left font-medium text-muted-foreground">Print</th>
-            <th class="h-10 px-3 text-left font-medium text-muted-foreground">Status</th>
-            <th class="h-10 px-3 text-right font-medium text-muted-foreground">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% if (!orders || orders.length === 0) { %>
-            <tr>
-              <td colspan="6" class="p-8 text-center text-muted-foreground">No orders in this view.</td>
+  <div class="card">
+    <div class="card-header flex flex-row items-center justify-between space-y-0 pb-4">
+      <div>
+        <h2 class="card-title text-base">Orders</h2>
+        <p class="card-description"><%= s.total %> order<%= s.total === 1 ? '' : 's' %> matching this view</p>
+      </div>
+    </div>
+    <div class="card-content-flush">
+      <div class="table-wrap">
+        <table class="table">
+          <thead class="table-header">
+            <tr class="table-row">
+              <th class="table-head">Order</th>
+              <th class="table-head">Type</th>
+              <th class="table-head">Fulfillment</th>
+              <th class="table-head">Print</th>
+              <th class="table-head">Status</th>
+              <th class="table-head text-right">Actions</th>
             </tr>
-          <% } else { %>
-            <% for (var i = 0; i < orders.length; i++) { %>
-              <%- include('order-row', { order: orders[i] }) %>
+          </thead>
+          <tbody class="table-body">
+            <% if (!orders || orders.length === 0) { %>
+              <tr class="table-row">
+                <td colspan="6" class="table-cell">
+                  <div class="empty-wrap">
+                    <p class="empty-title">No orders found</p>
+                    <p class="empty-desc">Try a different filter, search term, or date.</p>
+                  </div>
+                </td>
+              </tr>
+            <% } else { %>
+              <% for (var i = 0; i < orders.length; i++) { %>
+                <%- include('order-row', { order: orders[i] }) %>
+              <% } %>
             <% } %>
-          <% } %>
-        </tbody>
-      </table>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </main>

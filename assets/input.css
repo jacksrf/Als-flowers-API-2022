@@ -8,7 +8,9 @@
     --foreground: 240 10% 3.9%;
     --card: 0 0% 100%;
     --card-foreground: 240 10% 3.9%;
-    --primary: 142 76% 36%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 142 72% 29%;
     --primary-foreground: 0 0% 98%;
     --secondary: 240 4.8% 95.9%;
     --secondary-foreground: 240 5.9% 10%;
@@ -20,55 +22,210 @@
     --destructive-foreground: 0 0% 98%;
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
-    --ring: 142 76% 36%;
+    --ring: 142 72% 29%;
     --radius: 0.5rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: 'rlig' 1, 'calt' 1;
   }
 }
 
 @layer components {
+  /* —— shadcn Button —— */
   .btn {
-    @apply inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-9 px-4 py-2;
+    @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
   }
-  .btn-primary {
-    @apply btn bg-primary text-primary-foreground hover:opacity-90;
+  .btn-default {
+    @apply btn h-10 bg-primary px-4 py-2 text-primary-foreground hover:bg-primary/90;
   }
   .btn-secondary {
-    @apply btn bg-secondary text-secondary-foreground hover:bg-secondary/80;
+    @apply btn h-10 bg-secondary px-4 py-2 text-secondary-foreground hover:bg-secondary/80;
   }
   .btn-outline {
-    @apply btn border border-input bg-background hover:bg-accent hover:text-accent-foreground;
+    @apply btn h-10 border border-input bg-background px-4 py-2 hover:bg-accent hover:text-accent-foreground;
   }
   .btn-ghost {
-    @apply btn hover:bg-accent hover:text-accent-foreground;
+    @apply btn h-10 px-4 py-2 hover:bg-accent hover:text-accent-foreground;
   }
   .btn-sm {
-    @apply h-8 rounded-md px-3 text-xs;
+    @apply h-9 rounded-md px-3 text-xs;
   }
+  .btn-icon {
+    @apply h-9 w-9 p-0;
+  }
+
+  /* —— shadcn Badge —— */
   .badge {
-    @apply inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors;
+    @apply inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2;
   }
   .badge-default {
-    @apply badge border-transparent bg-primary text-primary-foreground;
+    @apply badge border-transparent bg-primary text-primary-foreground hover:bg-primary/80;
   }
   .badge-secondary {
-    @apply badge border-transparent bg-secondary text-secondary-foreground;
+    @apply badge border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80;
   }
   .badge-outline {
     @apply badge text-foreground;
   }
-  .badge-amber {
-    @apply badge border-transparent bg-amber-100 text-amber-900;
+  .badge-destructive {
+    @apply badge border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80;
   }
-  .badge-slate {
-    @apply badge border-transparent bg-slate-100 text-slate-700;
-  }
-  .badge-green {
+  .badge-success {
     @apply badge border-transparent bg-emerald-100 text-emerald-800;
   }
+  .badge-warning {
+    @apply badge border-transparent bg-amber-100 text-amber-800;
+  }
+  .badge-info {
+    @apply badge border-transparent bg-sky-100 text-sky-800;
+  }
+
+  /* —— shadcn Card —— */
   .card {
     @apply rounded-lg border bg-card text-card-foreground shadow-sm;
   }
+  .card-header {
+    @apply flex flex-col space-y-1.5 p-6;
+  }
+  .card-title {
+    @apply text-2xl font-semibold leading-none tracking-tight;
+  }
+  .card-description {
+    @apply text-sm text-muted-foreground;
+  }
+  .card-content {
+    @apply p-6 pt-0;
+  }
+  .card-content-flush {
+    @apply p-0;
+  }
+  .card-footer {
+    @apply flex items-center p-6 pt-0;
+  }
+
+  /* —— shadcn Input / Label —— */
+  .label {
+    @apply text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70;
+  }
   .input {
-    @apply flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring;
+    @apply flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  /* —— shadcn Separator —— */
+  .separator {
+    @apply shrink-0 bg-border;
+  }
+  .separator-h {
+    @apply separator h-px w-full;
+  }
+  .separator-v {
+    @apply separator h-4 w-px;
+  }
+
+  /* —— shadcn Tabs —— */
+  .tabs-list {
+    @apply inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground;
+  }
+  .tabs-trigger {
+    @apply inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
+  }
+  .tabs-trigger-active {
+    @apply tabs-trigger bg-background text-foreground shadow-sm;
+  }
+  .tabs-trigger-inactive {
+    @apply tabs-trigger hover:text-foreground;
+  }
+
+  /* —— shadcn Table —— */
+  .table-wrap {
+    @apply relative w-full overflow-auto;
+  }
+  .table {
+    @apply w-full caption-bottom text-sm;
+  }
+  .table-header tr {
+    @apply border-b;
+  }
+  .table-body tr:last-child {
+    @apply border-0;
+  }
+  .table-row {
+    @apply border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted;
+  }
+  .table-row-muted {
+    @apply table-row bg-muted/40 opacity-80;
+  }
+  .table-row-highlight {
+    @apply table-row border-l-2 border-l-amber-500 bg-amber-50/50;
+  }
+  .table-head {
+    @apply h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0;
+  }
+  .table-cell {
+    @apply p-4 align-middle [&:has([role=checkbox])]:pr-0;
+  }
+
+  /* —— App shell —— */
+  .app-header {
+    @apply sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60;
+  }
+  .app-main {
+    @apply mx-auto w-full max-w-7xl flex-1 space-y-6 px-4 py-6 sm:px-6 lg:px-8;
+  }
+  .page-heading {
+    @apply flex flex-col gap-1;
+  }
+  .page-title {
+    @apply text-3xl font-bold tracking-tight;
+  }
+  .page-description {
+    @apply text-muted-foreground;
+  }
+
+  .stats-grid {
+    @apply grid gap-4 sm:grid-cols-2 lg:grid-cols-4;
+  }
+  .stat-item {
+    @apply card p-4;
+  }
+  .stat-item-label {
+    @apply text-sm font-medium text-muted-foreground;
+  }
+  .stat-item-value {
+    @apply text-2xl font-bold tabular-nums;
+  }
+
+  .toolbar-grid {
+    @apply grid gap-4 md:grid-cols-[1fr_auto] md:items-end;
+  }
+  .toolbar-actions {
+    @apply flex flex-wrap gap-2;
+  }
+
+  .order-primary {
+    @apply font-medium leading-none;
+  }
+  .order-secondary {
+    @apply text-sm text-muted-foreground;
+  }
+
+  .action-group {
+    @apply flex flex-wrap items-center justify-end gap-2;
+  }
+
+  .empty-wrap {
+    @apply flex flex-col items-center justify-center py-16 text-center;
+  }
+  .empty-title {
+    @apply text-lg font-semibold;
+  }
+  .empty-desc {
+    @apply mt-1 max-w-sm text-sm text-muted-foreground;
   }
 }

@@ -53,10 +53,12 @@ function renderOrdersPage(req, res, options) {
     orders: orders,
     moment: moment,
     filter: filter,
+    summary: orderMeta.summarizeOrders(orders),
     pageTitle: options.pageTitle || 'Orders',
     pageSubtitle: options.pageSubtitle || '',
     showDateSearch: options.showDateSearch !== false,
     listBaseUrl: listBaseUrl,
+    currentNav: req.path,
     date: options.date
   });
 }

@@ -1,20 +1,24 @@
 <%- include('partials/head', { title: 'Login' }) %>
 
-<main class="flex min-h-[calc(100vh-3.5rem)] items-center justify-center px-4 py-12">
-  <div class="card w-full max-w-sm p-6">
-    <h1 class="text-xl font-semibold tracking-tight text-primary">Al's Flowers</h1>
-    <p class="mt-1 text-sm text-muted-foreground">Staff sign in</p>
-    <form class="mt-6 space-y-4" action="/login" method="POST">
-      <div>
-        <label class="text-sm font-medium" for="email">Email</label>
-        <input class="input mt-1" id="email" name="email" type="text" placeholder="Email" autofocus required />
-      </div>
-      <div>
-        <label class="text-sm font-medium" for="password">Password</label>
-        <input class="input mt-1" id="password" name="password" type="password" placeholder="Password" required />
-      </div>
-      <button type="submit" class="btn-primary w-full">Login</button>
-    </form>
+<main class="flex min-h-screen items-center justify-center px-4 py-12">
+  <div class="card w-full max-w-sm">
+    <div class="card-header">
+      <h1 class="card-title text-primary">Al's Flowers</h1>
+      <p class="card-description">Staff sign in</p>
+    </div>
+    <div class="card-content">
+      <form class="space-y-4" action="/login" method="POST">
+        <div class="space-y-2">
+          <label class="label" for="email">Email</label>
+          <input class="input" id="email" name="email" type="text" placeholder="you@example.com" autofocus required />
+        </div>
+        <div class="space-y-2">
+          <label class="label" for="password">Password</label>
+          <input class="input" id="password" name="password" type="password" placeholder="••••••••" required />
+        </div>
+        <button type="submit" class="btn-default w-full">Sign in</button>
+      </form>
+    </div>
   </div>
 </main>
 
