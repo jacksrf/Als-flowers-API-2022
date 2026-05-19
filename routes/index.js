@@ -39,6 +39,21 @@ function shopifyApiUrl(path) {
   return 'https://' + SHOPIFY_STORE + '.myshopify.com/admin/api/' + SHOPIFY_API_VERSION + path;
 }
 
+function getAdminBaseUrl() {
+  return process.env.ADMIN_BASE_URL || 'http://127.0.0.1:8093';
+}
+
+function rewriteAdminPreviewHtml(html) {
+  if (!html || typeof html !== 'string') {
+    return html;
+  }
+  return html
+    .replace(/href=(['"])\/stylesheets\//g, 'href=$1/admin-assets/stylesheets/')
+    .replace(/href=(['"])\/images\//g, 'href=$1/admin-assets/images/')
+    .replace(/src=(['"])\/images\//g, 'src=$1/admin-assets/images/')
+    .replace(/url\((['"]?)\/images\//g, 'url($1/admin-assets/images/');
+}
+
 router.use(function(req, res, next) {
   next();
 });
@@ -406,42 +421,77 @@ router.get('/order/reprint/pdf/:id', isLoggedIn, function(req, res, next) {
   });
 })
 
+// Proxy ADMIN static assets (stylesheets, fonts, images) so /order/preview HTML
+// does not load the API's own /stylesheets/style.css by mistake.
+router.use('/admin-assets', isLoggedIn, function(req, res) {
+  var adminPath = req.path;
+  var adminUrl = getAdminBaseUrl() + adminPath;
+
+  request.get({
+    url: adminUrl,
+    timeout: 15000,
+    encoding: null,
+    headers: { 'User-Agent': 'als-flowers-api-admin-proxy/1.0' }
+  }, function(err, upstreamRes, body) {
+    if (err) {
+      console.log('ADMIN asset proxy error for ' + adminPath + ':', err.message);
+      if (!res.headersSent) {
+        res.status(502).type('text/plain').send('Upstream ADMIN unreachable: ' + err.message);
+      }
+      return;
+    }
+
+    var status = upstreamRes && upstreamRes.statusCode;
+    if (!status || status < 200 || status >= 300) {
+      if (!res.headersSent) {
+        res.status(status || 502).type('text/plain').send('ADMIN returned HTTP ' + status + ' for ' + adminPath);
+      }
+      return;
+    }
+
+    if (upstreamRes.headers['content-type']) {
+      res.set('Content-Type', upstreamRes.headers['content-type']);
+    }
+    if (upstreamRes.headers['cache-control']) {
+      res.set('Cache-Control', upstreamRes.headers['cache-control']);
+    }
+    res.status(status).send(body);
+  });
+});
+
 // Proxy the ADMIN order ticket through the API so staff can preview it in
 // the browser even when the public admin.alsflowersmontgomery.com DNS is
-// pointing at a dead host. Uses ADMIN_BASE_URL (env), which on prod should
-// be the internal http://127.0.0.1:8093.
+// pointing at a dead host. Rewrites asset paths to /admin-assets/* above.
 router.get('/order/preview/:id', isLoggedIn, function(req, res, next) {
   var id = req.params.id;
-  var adminBase = process.env.ADMIN_BASE_URL || 'http://127.0.0.1:8093';
-  var adminUrl = adminBase + '/order/pdf/' + id;
+  var adminUrl = getAdminBaseUrl() + '/order/pdf/' + id;
 
-  var upstream = request.get({
+  request.get({
     url: adminUrl,
     timeout: 15000,
     headers: { 'User-Agent': 'als-flowers-api-preview/1.0' }
-  });
-
-  upstream.on('error', function(err) {
-    console.log('Order preview proxy error for ' + id + ':', err.message);
-    if (!res.headersSent) {
-      res.status(502).type('text/plain').send('Upstream ADMIN unreachable: ' + err.message);
-    }
-  });
-
-  upstream.on('response', function(upstreamRes) {
-    var status = upstreamRes.statusCode || 502;
-    if (status < 200 || status >= 300) {
-      res.status(502).type('text/plain').send('ADMIN returned HTTP ' + status + ' for order ' + id);
-      upstream.abort();
+  }, function(err, upstreamRes, body) {
+    if (err) {
+      console.log('Order preview proxy error for ' + id + ':', err.message);
+      if (!res.headersSent) {
+        res.status(502).type('text/plain').send('Upstream ADMIN unreachable: ' + err.message);
+      }
       return;
     }
-    res.status(status);
+
+    var status = upstreamRes && upstreamRes.statusCode;
+    if (!status || status < 200 || status >= 300) {
+      if (!res.headersSent) {
+        res.status(status || 502).type('text/plain').send('ADMIN returned HTTP ' + status + ' for order ' + id);
+      }
+      return;
+    }
+
     if (upstreamRes.headers['content-type']) {
       res.type(upstreamRes.headers['content-type']);
     }
+    res.status(status).send(rewriteAdminPreviewHtml(body));
   });
-
-  upstream.pipe(res);
 });
 
 router.get('/order/json/:id', function(req, res, next) {
