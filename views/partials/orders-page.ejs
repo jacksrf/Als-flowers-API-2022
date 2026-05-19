@@ -11,7 +11,8 @@
     <% } %>
   </div>
 
-  <% var s = typeof summary !== 'undefined' ? summary : { total: 0, arrangements: 0, unprinted: 0, pending: 0 }; %>
+  <% var s = typeof summary !== 'undefined' ? summary : { total: 0, arrangements: 0, unprinted: 0, pending: 0, printFailed: 0 }; %>
+  <% var baseUrl = typeof listBaseUrl !== 'undefined' ? listBaseUrl : '/orders'; %>
   <div class="stats-grid">
     <div class="stat-item">
       <p class="stat-item-label">In view</p>
@@ -29,6 +30,10 @@
       <p class="stat-item-label">Pending</p>
       <p class="stat-item-value text-orange-600"><%= s.pending %></p>
     </div>
+    <a href="<%= baseUrl %>?filter=print_failed" class="stat-item-action">
+      <p class="stat-item-label">Print failed</p>
+      <p class="stat-item-value <%= (s.printFailed || 0) > 0 ? 'text-destructive' : '' %>"><%= s.printFailed || 0 %></p>
+    </a>
   </div>
 
   <% var filters = [
@@ -36,9 +41,9 @@
     { key: 'all', label: 'All' },
     { key: 'arrangement', label: 'Arrangements' },
     { key: 'other', label: 'Other' },
+    { key: 'print_failed', label: 'Print failed' },
     { key: 'complete', label: 'Complete' }
   ]; %>
-  <% var baseUrl = typeof listBaseUrl !== 'undefined' ? listBaseUrl : '/orders'; %>
   <% var currentFilter = typeof filter !== 'undefined' ? filter : 'active'; %>
 
   <div class="card">

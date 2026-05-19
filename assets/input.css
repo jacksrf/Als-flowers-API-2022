@@ -53,6 +53,9 @@
   .btn-ghost {
     @apply btn h-10 px-4 py-2 hover:bg-accent hover:text-accent-foreground;
   }
+  .btn-destructive {
+    @apply btn h-10 bg-destructive px-4 py-2 text-destructive-foreground hover:bg-destructive/90;
+  }
   .btn-sm {
     @apply h-9 rounded-md px-3 text-xs;
   }
@@ -189,10 +192,13 @@
   }
 
   .stats-grid {
-    @apply grid gap-4 sm:grid-cols-2 lg:grid-cols-4;
+    @apply grid gap-4 sm:grid-cols-2 lg:grid-cols-5;
   }
   .stat-item {
     @apply card p-4;
+  }
+  .stat-item-action {
+    @apply stat-item block transition-colors hover:bg-muted/40;
   }
   .stat-item-label {
     @apply text-sm font-medium text-muted-foreground;
