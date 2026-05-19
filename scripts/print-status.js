@@ -6,6 +6,9 @@
  * Cross-references PrintNode jobs with Mongo orders and reports mismatches.
  * Run with `node scripts/print-status.js` (dry-run) or `--apply` to backfill.
  *
+ * Required env vars:
+ *   MONGO_URL            Mongo connection string (MONGODB_URI / MONGO_URI also accepted)
+ *
  * Flags:
  *   --apply              actually write fixes to Mongo (default: dry-run)
  *   --days <n>           include orders from the last n days (default: 7)
@@ -26,8 +29,14 @@ var moment = require('moment');
 var printOrder = require('../lib/printOrder');
 var orderChannel = require('../lib/orderChannel');
 
-var MONGO_URI = process.env.MONGO_URL ||
-  'mongodb+srv://jacksrf:trey3333@als-flowers-api.oou3u.mongodb.net/als-flowers-api?retryWrites=true&w=majority';
+var MONGO_URI = process.env.MONGO_URL || process.env.MONGODB_URI || process.env.MONGO_URI;
+
+if (!MONGO_URI) {
+  console.error('Missing Mongo connection string.');
+  console.error('Set MONGO_URL (or MONGODB_URI / MONGO_URI) before running, e.g.:');
+  console.error('  MONGO_URL="mongodb+srv://user:pass@host/db?retryWrites=true&w=majority" npm run print:status');
+  process.exit(2);
+}
 
 var PRINTNODE_BASE = 'https://api.printnode.com';
 var PRINTNODE_MAX_PER_PAGE = 500;
