@@ -22,8 +22,13 @@ var MongoClient = require('mongodb').MongoClient;
 var assert = require('assert');
 var mongo = require('mongodb');
 var monk = require('monk');
-// var db = monk('mongodb://jacksrf2:trey3333@ds155461.mlab.com:55461/als-flowers-api');
-var db = monk('mongodb+srv://jacksrf:trey3333@als-flowers-api.oou3u.mongodb.net/als-flowers-api?retryWrites=true&w=majority');
+
+var MONGO_URL = process.env.MONGO_URL || process.env.MONGODB_URI || process.env.MONGO_URI;
+if (!MONGO_URL) {
+  console.error('FATAL: MONGO_URL (or MONGODB_URI / MONGO_URI) is not set. Refusing to start.');
+  process.exit(1);
+}
+var db = monk(MONGO_URL);
 console.log(db.collection)
 
 var indexRouter = require('./routes/index');

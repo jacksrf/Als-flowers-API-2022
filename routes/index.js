@@ -22,6 +22,23 @@ var router = express.Router();
 var mongo = require('mongodb')
 // var fetch = require("node-fetch");
 
+var SHOPIFY_API_KEY = process.env.SHOPIFY_API_KEY;
+var SHOPIFY_API_PASSWORD = process.env.SHOPIFY_API_PASSWORD;
+var SHOPIFY_STORE = process.env.SHOPIFY_STORE || 'als-flowers';
+var SHOPIFY_API_VERSION = process.env.SHOPIFY_API_VERSION || '2021-01';
+
+function shopifyAuthHeader() {
+  if (!SHOPIFY_API_KEY || !SHOPIFY_API_PASSWORD) {
+    console.warn('Shopify API credentials not set; SHOPIFY_API_KEY / SHOPIFY_API_PASSWORD env vars are required.');
+    return null;
+  }
+  return 'Basic ' + Buffer.from(SHOPIFY_API_KEY + ':' + SHOPIFY_API_PASSWORD).toString('base64');
+}
+
+function shopifyApiUrl(path) {
+  return 'https://' + SHOPIFY_STORE + '.myshopify.com/admin/api/' + SHOPIFY_API_VERSION + path;
+}
+
 router.use(function(req, res, next) {
   next();
 });
@@ -578,11 +595,8 @@ router.post('/new/order', function(req, res, next) {
       if (doc.source_name === 'subscription_contract') {
         console.log('SUBSCRIPTION CODE 1')
         var original_order = doc;
-        // console.log(doc.customer.id)
-        var username = "36274b5cf78a52bfa4c6780ba48a2fb1";
-        var password = "a26e549d188fe3459e1ed5b1c2cb1425";
-        var url = "https://als-flowers.myshopify.com/admin/api/2021-01/customers/" + doc.customer.id + "/orders.json?status=any";
-        var auth = "Basic " + new Buffer(username + ":" + password).toString("base64");
+        var url = shopifyApiUrl('/customers/' + doc.customer.id + '/orders.json?status=any');
+        var auth = shopifyAuthHeader();
 
         request.get({
             url: url,
@@ -661,10 +675,8 @@ router.post('/new/order', function(req, res, next) {
                       "note_attributes": order.note_attributes
                     }
                   }
-                  var username2 = "36274b5cf78a52bfa4c6780ba48a2fb1";
-                  var password2 = "a26e549d188fe3459e1ed5b1c2cb1425";
-                  var url2 = "https://als-flowers.myshopify.com/admin/api/2021-01/orders/" + original_order.id + ".json";
-                  var auth2 = "Basic " + new Buffer(username2 + ":" + password2).toString("base64");
+                  var url2 = shopifyApiUrl('/orders/' + original_order.id + '.json');
+                  var auth2 = shopifyAuthHeader();
 
                   request.put({
                       url: url2,
@@ -722,11 +734,8 @@ router.post('/new/order', function(req, res, next) {
         if (doc.source_name === 'subscription_contract') {
           console.log('SUBSCRIPTION CODE 2')
           var original_order = doc;
-          // console.log(doc.customer.id)
-          var username = "36274b5cf78a52bfa4c6780ba48a2fb1";
-          var password = "a26e549d188fe3459e1ed5b1c2cb1425";
-          var url = "https://als-flowers.myshopify.com/admin/api/2021-01/customers/" + doc.customer.id + "/orders.json?status=any";
-          var auth = "Basic " + new Buffer(username + ":" + password).toString("base64");
+          var url = shopifyApiUrl('/customers/' + doc.customer.id + '/orders.json?status=any');
+          var auth = shopifyAuthHeader();
 
           request.get({
               url: url,
@@ -806,10 +815,8 @@ router.post('/new/order', function(req, res, next) {
                         "note_attributes": order.note_attributes
                       }
                     }
-                    var username2 = "36274b5cf78a52bfa4c6780ba48a2fb1";
-                    var password2 = "a26e549d188fe3459e1ed5b1c2cb1425";
-                    var url2 = "https://als-flowers.myshopify.com/admin/api/2021-01/orders/" + original_order.id + ".json";
-                    var auth2 = "Basic " + new Buffer(username2 + ":" + password2).toString("base64");
+                    var url2 = shopifyApiUrl('/orders/' + original_order.id + '.json');
+                    var auth2 = shopifyAuthHeader();
 
                     request.put({
                         url: url2,
