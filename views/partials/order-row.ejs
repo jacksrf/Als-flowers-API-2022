@@ -60,7 +60,7 @@
   <td class="table-cell">
     <div class="action-group">
       <a href="/order/reprint/pdf/<%= o._id %>" class="<%= o.isPrintFailed ? 'btn-destructive' : 'btn-default' %> btn-sm"><%= o.isPrintFailed ? 'Retry print' : 'Print' %></a>
-      <a href="https://admin.alsflowersmontgomery.com/order/pdf/<%= o._id %>" target="_blank" rel="noopener" class="btn-outline btn-sm">PDF</a>
+      <a href="/order/preview/<%= o._id %>" target="_blank" rel="noopener" class="btn-outline btn-sm">PDF</a>
       <a href="/order/edit/<%= o._id %>" class="btn-outline btn-sm">Edit</a>
       <% if (o.isComplete) { %>
         <button type="button" class="btn-ghost btn-sm js-order-status" data-status="pending" data-order-id="<%= o._id %>">Reopen</button>
