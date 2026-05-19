@@ -11,6 +11,13 @@
     <% } %>
   </td>
   <td class="table-cell">
+    <% if (o.channelKey === 'online') { %>
+      <span class="badge-info"><%= o.channelLabel %></span>
+    <% } else { %>
+      <span class="badge-secondary"><%= o.channelLabel %></span>
+    <% } %>
+  </td>
+  <td class="table-cell">
     <% if (o.needs_arrangement) { %>
       <span class="badge-warning">Arrangement</span>
     <% } else { %>
@@ -29,7 +36,11 @@
   </td>
   <td class="table-cell">
     <% if (o.isPrinted) { %>
-      <span class="badge-info" title="<%= o.printedTitle || '' %>"><%= o.printedLabel %></span>
+      <span class="badge-success" title="<%= o.printedTitle || '' %>"><%= o.printedLabel %></span>
+    <% } else if (o.isPrintQueued) { %>
+      <span class="badge-secondary" title="<%= o.printedTitle || '' %>"><%= o.printedLabel %></span>
+    <% } else if (o.isPrintFailed) { %>
+      <span class="badge-destructive" title="<%= o.printedTitle || '' %>"><%= o.printedLabel %></span>
     <% } else { %>
       <span class="badge-outline">Not printed</span>
     <% } %>

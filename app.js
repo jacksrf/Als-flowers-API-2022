@@ -28,6 +28,8 @@ console.log(db.collection)
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+var printOrder = require('./lib/printOrder');
+var orderMeta = require('./lib/orderMeta');
 
 // var routes = require('./routes/index');
 // var admin = require('./routes/admin.js');
@@ -80,6 +82,16 @@ function haltOnTimedout(req, res, next){
 app.use(function(req,res,next){
     req.db = db;
     next();
+});
+
+printOrder.startPendingPrintReconciler(db);
+
+orderMeta.backfillNeedsArrangement(db, { limit: 500 }, function(err, result) {
+  if (err) {
+    console.log('needs_arrangement backfill error:', err);
+  } else if (result && result.updated) {
+    console.log('needs_arrangement backfill: updated ' + result.updated + ' of ' + result.scanned + ' (' + result.arrangements + ' arrangements)');
+  }
 });
 
 app.use('/', indexRouter, loginRoute);

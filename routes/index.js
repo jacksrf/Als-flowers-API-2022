@@ -35,9 +35,9 @@ function parseOrderId(id) {
 }
 
 function renderOrdersPage(req, res, options) {
-  var orders = orderMeta.enrichOrdersForList(options.orders || []);
+  var enriched = orderMeta.enrichOrdersForList(options.orders || [], req.db);
   var filter = req.query.filter || options.defaultFilter || 'active';
-  orders = orderMeta.applyListFilter(orders, filter);
+  var orders = orderMeta.applyListFilter(enriched, filter);
   var view = options.view || 'orders';
   var listBaseUrl = options.listBaseUrl;
   if (!listBaseUrl) {
@@ -53,7 +53,7 @@ function renderOrdersPage(req, res, options) {
     orders: orders,
     moment: moment,
     filter: filter,
-    summary: orderMeta.summarizeOrders(orders),
+    summary: orderMeta.summarizeOrders(enriched),
     pageTitle: options.pageTitle || 'Orders',
     pageSubtitle: options.pageSubtitle || '',
     showDateSearch: options.showDateSearch !== false,
@@ -384,7 +384,7 @@ router.get('/order/reprint/pdf/:id', isLoggedIn, function(req, res, next) {
       if (printErr) {
         return renderPrintResult('THERE WAS AN ISSUE PRINTING, LET TREY KNOW IMMEDIATELY');
       }
-      renderPrintResult('COMPLETED! YOURE PRINT SHOULD BECOMING SOON.');
+      renderPrintResult('PRINTED SUCCESSFULLY — ORDER MARKED AS PRINTED.');
     });
   });
 })

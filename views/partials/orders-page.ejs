@@ -92,6 +92,7 @@
           <thead class="table-header">
             <tr class="table-row">
               <th class="table-head">Order</th>
+              <th class="table-head">Channel</th>
               <th class="table-head">Type</th>
               <th class="table-head">Fulfillment</th>
               <th class="table-head">Print</th>
@@ -102,7 +103,7 @@
           <tbody class="table-body">
             <% if (!orders || orders.length === 0) { %>
               <tr class="table-row">
-                <td colspan="6" class="table-cell">
+                <td colspan="7" class="table-cell">
                   <div class="empty-wrap">
                     <p class="empty-title">No orders found</p>
                     <p class="empty-desc">Try a different filter, search term, or date.</p>
