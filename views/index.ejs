@@ -1,82 +1,11 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <!-- <link rel='stylesheet' href='/stylesheets/style.css' /> -->
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+<%- include('partials/head', { title: 'Print' }) %>
 
-</head>
-<style>
-body {
-  padding: 0px;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
-}
+<main class="mx-auto max-w-lg px-4 py-16 text-center">
+  <div class="card p-8">
+    <h1 class="text-xl font-semibold"><%= message %></h1>
+    <a href="/orders" class="btn-primary mt-6 inline-flex">Return to orders</a>
+  </div>
+</main>
 
-a  {
-   color: white!important;
-   text-decoration: none!important;
-}
-
-.half {
-    transform: rotate(90deg);
-}
-
-#message_holder {
-    transform: rotate(90deg);
-    position: absolute;
-    top: 325px;
-    right: 100px;
-    width: 500px;
-    height: 200px;
-    text-align: center;
-    display: table;
-}
-
-div#message {
-    display: table-cell;
-    vertical-align: middle;
-    text-align: center;
-    width: 100%;
-    height: 100%;
-}
-
-
-.row {
-    margin: 25px 0px;
-    float: left;
-    width: 100%;
-    display: inline-block;
-    /* padding: 0px 25px; */
-}
-
-.item {
-    display: inline-block;
-    line-height: 38px;
-}
-
-.item.number {
-    width: 10%;
-}
-.item.name {
-    width: 20%;
-}
-.item.total {
-    width: 5%;
-    margin: 0px 25px;
-}
-
-button.item.button.btn.btn-success {
-    width: 150px;
-    margin: 0px 25px;
-}
-
-button.item.button.btn.btn-info {
-    width: 100px;
-    margin: 0px 25px;
-    /* float: right; */
-}
-</style>
-  <body style="padding: 50px">
-    <h1><%= message %></h1>
-    <button class="btn btn-success" style="background: green;"><a href="/orders" style="color: white;">< RETURN TO ORDERS</a></button>
-  </body>
+</body>
 </html>

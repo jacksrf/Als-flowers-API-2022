@@ -1,0 +1,46 @@
+<script>
+(function() {
+  var searchDay = document.getElementById('search_day');
+  if (searchDay) {
+    searchDay.addEventListener('click', function(e) {
+      e.preventDefault();
+      var form = document.getElementById('date_form');
+      var input = form && form.querySelector('input[name="date"]');
+      if (!input || !input.value) return;
+      form.action = '/orders-by-day/' + encodeURIComponent(input.value);
+      form.submit();
+    });
+  }
+
+  document.querySelectorAll('.js-order-status').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var orderId = btn.getAttribute('data-order-id');
+      var status = btn.getAttribute('data-status');
+      btn.disabled = true;
+      fetch('/order/' + orderId + '/status', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ status: status })
+      })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.ok) {
+            window.location.reload();
+          } else {
+            btn.disabled = false;
+            alert('Could not update order status.');
+          }
+        })
+        .catch(function() {
+          btn.disabled = false;
+          alert('Could not update order status.');
+        });
+    });
+  });
+})();
+</script>
+</body>
+</html>

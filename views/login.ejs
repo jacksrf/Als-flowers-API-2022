@@ -1,116 +1,22 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <!-- <link rel='stylesheet' href='/stylesheets/style.css' /> -->
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+<%- include('partials/head', { title: 'Login' }) %>
 
-</head>
-<style>
-body {
-  padding: 0px;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
-}
+<main class="flex min-h-[calc(100vh-3.5rem)] items-center justify-center px-4 py-12">
+  <div class="card w-full max-w-sm p-6">
+    <h1 class="text-xl font-semibold tracking-tight text-primary">Al's Flowers</h1>
+    <p class="mt-1 text-sm text-muted-foreground">Staff sign in</p>
+    <form class="mt-6 space-y-4" action="/login" method="POST">
+      <div>
+        <label class="text-sm font-medium" for="email">Email</label>
+        <input class="input mt-1" id="email" name="email" type="text" placeholder="Email" autofocus required />
+      </div>
+      <div>
+        <label class="text-sm font-medium" for="password">Password</label>
+        <input class="input mt-1" id="password" name="password" type="password" placeholder="Password" required />
+      </div>
+      <button type="submit" class="btn-primary w-full">Login</button>
+    </form>
+  </div>
+</main>
 
-a  {
-   color: white!important;
-   text-decoration: none!important;
-}
-
-.half {
-    transform: rotate(90deg);
-}
-
-#message_holder {
-    transform: rotate(90deg);
-    position: absolute;
-    top: 325px;
-    right: 100px;
-    width: 500px;
-    height: 200px;
-    text-align: center;
-    display: table;
-}
-
-div#message {
-    display: table-cell;
-    vertical-align: middle;
-    text-align: center;
-    width: 100%;
-    height: 100%;
-}
-
-
-.row {
-    margin: 25px 0px;
-    float: left;
-    width: 100%;
-    display: inline-block;
-    /* padding: 0px 25px; */
-}
-
-.item {
-    display: inline-block;
-    line-height: 38px;
-}
-
-.item.number {
-    width: 10%;
-}
-.item.name {
-    width: 20%;
-}
-.item.total {
-    width: 5%;
-    margin: 0px 25px;
-}
-
-button.item.button.btn.btn-success {
-    width: 150px;
-    margin: 0px 25px;
-}
-
-button.item.button.btn.btn-info {
-    width: 100px;
-    margin: 0px 25px;
-    /* float: right; */
-}
-</style>
-  <body>
-    <div id="contact_top">
-    </div>
-
-    <div id="admin_home">
-
-<div class="container">
-        <div id="login" class="row">
-            <div class="col-md-4 col-md-offset-4">
-                <div class="login-panel panel panel-default">
-                    <div id="logo_admin" class="panel-heading">
-                      <img style="width: 90%; margin-left: 5%;" src=""/>
-                    </div>
-                    <div class="panel-body">
-                        <form role="form" action = "/login" method = "POST">
-                            <fieldset>
-                                <div class="form-group">
-                                    <input class="form-control" placeholder="Username"  name="email" type="text" autofocus>
-                                </div>
-                                <div class="form-group">
-                                    <input class="form-control" placeholder="Password" name="password" type="password" value="">
-                                </div>
-                                <!-- Change this to a button or input when using this as a form -->
-                                <button class="btn btn-lg btn-success btn-block">Login</button>
-                            </fieldset>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-</div>
-
-</div>
-
-<script>
-
-</script>
 </body>
 </html>

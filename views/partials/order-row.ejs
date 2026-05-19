@@ -1,0 +1,41 @@
+<% var o = order; %>
+<tr class="border-b transition-colors hover:bg-muted/50 <%= o.isComplete ? 'opacity-60 bg-muted/30' : '' %>" data-order-id="<%= o._id %>">
+  <td class="p-3 align-middle">
+    <div class="font-medium">#<%= o.order_number %></div>
+    <div class="text-sm text-muted-foreground"><%= o.customerName %></div>
+  </td>
+  <td class="p-3 align-middle">
+    <% if (o.needs_arrangement) { %>
+      <span class="badge-amber">Arrangement</span>
+    <% } else { %>
+      <span class="badge-slate">Other</span>
+    <% } %>
+  </td>
+  <td class="p-3 align-middle text-sm"><%= o.fulfillmentLabel %></td>
+  <td class="p-3 align-middle">
+    <% if (o.printed_at) { %>
+      <span class="badge-secondary" title="<%= o.printedTitle || '' %>">Printed <%= o.printedLabel %></span>
+    <% } else { %>
+      <span class="badge-outline text-muted-foreground">Not printed</span>
+    <% } %>
+  </td>
+  <td class="p-3 align-middle">
+    <% if (o.isComplete) { %>
+      <span class="badge-green">Complete</span>
+    <% } else { %>
+      <span class="badge-outline">Pending</span>
+    <% } %>
+  </td>
+  <td class="p-3 align-middle text-right">
+    <div class="flex flex-wrap justify-end gap-2">
+      <a href="/order/reprint/pdf/<%= o._id %>" class="btn-primary btn-sm">Print</a>
+      <a href="https://admin.alsflowersmontgomery.com/order/pdf/<%= o._id %>" target="_blank" rel="noopener" class="btn-outline btn-sm">PDF</a>
+      <a href="/order/edit/<%= o._id %>" class="btn-ghost btn-sm">Edit</a>
+      <% if (o.isComplete) { %>
+        <button type="button" class="btn-ghost btn-sm js-order-status" data-status="pending" data-order-id="<%= o._id %>">Reopen</button>
+      <% } else { %>
+        <button type="button" class="btn-secondary btn-sm js-order-status" data-status="complete" data-order-id="<%= o._id %>">Complete</button>
+      <% } %>
+    </div>
+  </td>
+</tr>

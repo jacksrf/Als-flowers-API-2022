@@ -11,6 +11,7 @@ var webshot = require('webshot-node');
 var moment = require('moment');
 var nl2br = require('nl2br');
 var printOrder = require('../lib/printOrder');
+var orderMeta = require('../lib/orderMeta');
 
 var multipart = require('connect-multiparty');
 var multipartMiddleware = multipart();
@@ -24,6 +25,58 @@ var mongo = require('mongodb')
 router.use(function(req, res, next) {
   next();
 });
+
+function parseOrderId(id) {
+  try {
+    return mongo.ObjectID(id);
+  } catch (e) {
+    return id;
+  }
+}
+
+function renderOrdersPage(req, res, options) {
+  var orders = orderMeta.enrichOrdersForList(options.orders || []);
+  var filter = req.query.filter || options.defaultFilter || 'active';
+  orders = orderMeta.applyListFilter(orders, filter);
+  var view = options.view || 'orders';
+  var listBaseUrl = options.listBaseUrl;
+  if (!listBaseUrl) {
+    if (view === 'orders-today') {
+      listBaseUrl = '/orders/today';
+    } else if (view === 'orders-tomorrow') {
+      listBaseUrl = '/orders/tomorrow';
+    } else {
+      listBaseUrl = '/orders';
+    }
+  }
+  res.render(view, {
+    orders: orders,
+    moment: moment,
+    filter: filter,
+    pageTitle: options.pageTitle || 'Orders',
+    pageSubtitle: options.pageSubtitle || '',
+    showDateSearch: options.showDateSearch !== false,
+    listBaseUrl: listBaseUrl,
+    date: options.date
+  });
+}
+
+function fetchOrdersList(db, findQuery, sortLimit, callback) {
+  var ordersDB = db.get('orders');
+  var query = findQuery || {};
+  var opts = sortLimit || { limit: 500, sort: { processed_at: -1 } };
+  ordersDB.find(query, {
+    limit: opts.limit,
+    sort: opts.sort,
+    fields: orderMeta.LIST_FIELDS
+  }, function(err, orders) {
+    if (err) {
+      return callback(err);
+    }
+    callback(null, orderMeta.dedupeOrdersById(orders));
+  });
+}
+
 // app/routes.js
 // root with login links
 
@@ -124,299 +177,105 @@ router.get('/', isLoggedIn, function(req, res, next) {
 });
 
 router.get('/orders', isLoggedIn, function(req, res, next) {
-  var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-  //console.log(ip)
-  //console.log(req)
-  var db = req.db;
-  var ordersDB = db.get('orders')
-  ordersDB.find({}, {
-    limit: 500,
-    sort: {
-      'processed_at': -1
-    },
-    fields: {
-      _id: 1,
-      id: 1,
-      name: 1,
-      order_number: 1,
-      customer: 1,
-      total_price_usd: 1,
-      updated_at: 1,
-      processed_at: 1
+  fetchOrdersList(req.db, {}, { limit: 500, sort: { processed_at: -1 } }, function(err, orders) {
+    if (err) {
+      console.log(err);
+      return next(err);
     }
-  }, function(err, orders) {
-    console.log(err)
-//    console.log(orders)
-    var todaysOrdersClean = Array.from(new Set(orders.map(a => a.id)))
-      .map(id => {
-        return orders.find(a => a.id === id)
-      })
-    res.render('orders', {
-      orders: todaysOrdersClean,
-      moment: moment
-    })
-  })
+    renderOrdersPage(req, res, {
+      orders: orders,
+      defaultFilter: 'active',
+      pageTitle: 'Orders',
+      pageSubtitle: 'Recent orders'
+    });
+  });
 });
 
 router.get('/orders/today', isLoggedIn, function(req, res, next) {
-  var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-  //console.log(ip)
-  //console.log(req)
-  var db = req.db;
-  var today = moment().format('YYYY/MM/DD').toString()
-  // var today = '2020/12/23'
-  console.log(today)
-  var ordersDB = db.get('orders')
-  var todaysOrders = [];
-  ordersDB.find({}, {
-    limit: 1000,
-    sort: {
-      _id: -1
+  var today = moment().format('YYYY/MM/DD').toString();
+  fetchOrdersList(req.db, {}, { limit: 1000, sort: { _id: -1 } }, function(err, orders) {
+    if (err) {
+      console.log(err);
+      return next(err);
     }
-  }, function(err, orders) {
-    console.log(err)
-    // console.log(orders)
-    for (j = 0; j < orders.length; j++) {
-      orders[j].deliver_day = "";
-      orders[j].orderNotes = {};
-      if (orders[j].note_attributes && orders[j].customer != undefined) {
-        // console.log(orders[j].customer)
-        // console.log(orders[j].name)
-        for (i = 0; i < orders[j].note_attributes.length; i++) {
-          var key = orders[j].note_attributes[i].name.replace(/ /g, "_").replace(/-/g, "_").toLowerCase();
-          var value = orders[j].note_attributes[i].value.toString();
-          orders[j].orderNotes[key] = value;
-          if (i === orders[j].note_attributes.length - 1) {
-            // // console.log(orders[j].orderNotes)
-            // // console.log(orders[j].orderNotes.delivery_date)
-            // // console.log(today)
-            if (orders[j].orderNotes.checkout_method === 'delivery') {
-              if (orders[j].orderNotes.delivery_date) {
-                var delivery_date_clean = orders[j].orderNotes.delivery_date.replace(/-/g, "/")
-                if (delivery_date_clean === today) {
-                  // // console.log(orders[j].name)
-                  todaysOrders.push(orders[j])
-                }
-              }
-            }
-
-            if (orders[j].orderNotes.checkout_method === 'pickup') {
-              if (orders[j].orderNotes.pickup_date) {
-                var pickup_date_clean = orders[j].orderNotes.pickup_date.replace(/-/g, "/")
-                if (pickup_date_clean === today) {
-                  // // console.log(orders[j].name)
-                  todaysOrders.push(orders[j])
-                }
-              }
-            }
-          }
-        }
-      }
-      if (j === orders.length - 1) {
-        // var todaysOrdersSet = new Set(todaysOrders);
-        var todaysOrdersClean = Array.from(new Set(todaysOrders.map(a => a.id)))
-          .map(id => {
-            return todaysOrders.find(a => a.id === id)
-          })
-        res.render('orders-today', {
-          orders: todaysOrdersClean
-        })
-      }
-    }
-
-  })
+    var filtered = orderMeta.filterOrdersByDay(orders, today);
+    renderOrdersPage(req, res, {
+      orders: filtered,
+      view: 'orders-today',
+      defaultFilter: 'all',
+      pageTitle: "Today's orders",
+      pageSubtitle: moment().format('dddd, MMM D, YYYY'),
+      showDateSearch: false
+    });
+  });
 });
 
 router.get('/orders/tomorrow', isLoggedIn, function(req, res, next) {
-  var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-  // console.log(ip)
-  // console.log(req)
-  var db = req.db;
-  var today = moment().add(1, 'days').format('YYYY/MM/DD').toString()
-  // var today = '2020/12/23'
-  // console.log(today)
-  var ordersDB = db.get('orders')
-  var todaysOrders = [];
-  ordersDB.find({}, {
-    limit: 2000,
-    sort: {
-      _id: -1
+  var tomorrow = moment().add(1, 'days').format('YYYY/MM/DD').toString();
+  fetchOrdersList(req.db, {}, { limit: 2000, sort: { _id: -1 } }, function(err, orders) {
+    if (err) {
+      console.log(err);
+      return next(err);
     }
-  }, function(err, orders) {
-    console.log(err)
-    // // console.log(orders)
-    for (j = 0; j < orders.length; j++) {
-      orders[j].deliver_day = "";
-      orders[j].orderNotes = {};
-      if (orders[j].note_attributes && orders[j].customer) {
-        // console.log(orders[j].customer)
-        for (i = 0; i < orders[j].note_attributes.length; i++) {
-          var key = orders[j].note_attributes[i].name.replace(/ /g, "_").replace(/-/g, "_").toLowerCase();
-          var value = orders[j].note_attributes[i].value.toString();
-          orders[j].orderNotes[key] = value;
-          if (i === orders[j].note_attributes.length - 1) {
-            // // console.log(orders[j].orderNotes)
-            // console.log(orders[j].orderNotes.delivery_date)
-            // console.log(today)
-            if (orders[j].orderNotes.checkout_method === 'delivery') {
-              if (orders[j].orderNotes.delivery_date) {
-                var delivery_date_clean = orders[j].orderNotes.delivery_date.replace(/-/g, "/")
-                if (delivery_date_clean === today) {
-                  // console.log(orders[j].name)
-                  todaysOrders.push(orders[j])
-                }
-              }
-            }
-
-            if (orders[j].orderNotes.checkout_method === 'pickup') {
-              if (orders[j].orderNotes.pickup_date) {
-                var pickup_date_clean = orders[j].orderNotes.pickup_date.replace(/-/g, "/")
-                if (pickup_date_clean === today) {
-                  // console.log(orders[j].name)
-                  todaysOrders.push(orders[j])
-                }
-              }
-            }
-          }
-        }
-      }
-      if (j === orders.length - 1) {
-        // var todaysOrdersSet = new Set(todaysOrders);
-        var todaysOrdersClean = Array.from(new Set(todaysOrders.map(a => a.id)))
-          .map(id => {
-            return todaysOrders.find(a => a.id === id)
-          })
-        res.render('orders-tomorrow', {
-          orders: todaysOrdersClean
-        })
-      }
-    }
-
-  })
+    var filtered = orderMeta.filterOrdersByDay(orders, tomorrow);
+    renderOrdersPage(req, res, {
+      orders: filtered,
+      view: 'orders-tomorrow',
+      defaultFilter: 'all',
+      pageTitle: "Tomorrow's orders",
+      pageSubtitle: moment().add(1, 'days').format('dddd, MMM D, YYYY'),
+      showDateSearch: false
+    });
+  });
 });
 
 router.post('/orders-by-day/:day', isLoggedIn, function(req, res, next) {
-  var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-  //console.log(ip)
-  //console.log(req)
   var day = decodeURI(req.params.day);
-  var db = req.db;
-  var today = moment(day).format('YYYY/MM/DD').toString()
-  // var today = '2020/12/23'
-  console.log(today)
-  var ordersDB = db.get('orders')
-  var todaysOrders = [];
-  ordersDB.find({}, {
-    limit: 1000,
-    sort: {
-      _id: -1
+  var dayFormatted = moment(day).format('YYYY/MM/DD').toString();
+  fetchOrdersList(req.db, {}, { limit: 1000, sort: { _id: -1 } }, function(err, orders) {
+    if (err) {
+      console.log(err);
+      return next(err);
     }
-  }, function(err, orders) {
-    console.log(err)
-    // console.log(orders)
-    for (j = 0; j < orders.length; j++) {
-      orders[j].deliver_day = "";
-      orders[j].orderNotes = {};
-      if (orders[j].note_attributes && orders[j].customer != undefined) {
-        // console.log(orders[j].customer)
-        // console.log(orders[j].name)
-        for (i = 0; i < orders[j].note_attributes.length; i++) {
-          var key = orders[j].note_attributes[i].name.replace(/ /g, "_").replace(/-/g, "_").toLowerCase();
-          var value = orders[j].note_attributes[i].value.toString();
-          orders[j].orderNotes[key] = value;
-          if (i === orders[j].note_attributes.length - 1) {
-            // // console.log(orders[j].orderNotes)
-            // // console.log(orders[j].orderNotes.delivery_date)
-            // // console.log(today)
-            if (orders[j].orderNotes.checkout_method === 'delivery') {
-              if (orders[j].orderNotes.delivery_date) {
-                var delivery_date_clean = orders[j].orderNotes.delivery_date.replace(/-/g, "/")
-                if (delivery_date_clean === today) {
-                  // // console.log(orders[j].name)
-                  todaysOrders.push(orders[j])
-                }
-              }
-            }
-
-            if (orders[j].orderNotes.checkout_method === 'pickup') {
-              if (orders[j].orderNotes.pickup_date) {
-                var pickup_date_clean = orders[j].orderNotes.pickup_date.replace(/-/g, "/")
-                if (pickup_date_clean === today) {
-                  // // console.log(orders[j].name)
-                  todaysOrders.push(orders[j])
-                }
-              }
-            }
-          }
-        }
-      }
-      if (j === orders.length - 1) {
-        // var todaysOrdersSet = new Set(todaysOrders);
-        var todaysOrdersClean = Array.from(new Set(todaysOrders.map(a => a.id)))
-          .map(id => {
-            return todaysOrders.find(a => a.id === id)
-          })
-        res.render('orders-random-day', {
-          date: moment(day).format('MM/DD/YYYY'),
-          orders: todaysOrdersClean
-        })
-      }
-    }
-
-  })
+    var filtered = orderMeta.filterOrdersByDay(orders, dayFormatted);
+    renderOrdersPage(req, res, {
+      orders: filtered,
+      view: 'orders-random-day',
+      defaultFilter: 'all',
+      pageTitle: 'Orders for ' + moment(day).format('MM/DD/YYYY'),
+      pageSubtitle: '',
+      showDateSearch: false,
+      date: moment(day).format('MM/DD/YYYY')
+    });
+  });
 });
 
 router.post('/orders/search', isLoggedIn, function(req, res, next) {
   var order = req.body.order;
-  // console.log(order)
   var order_number = '#' + order;
-  var db = req.db;
-  var ordersDB = db.get('orders')
-  if (order === "") {
-    ordersDB.find({}, {
-      limit: 500,
-      sort: {
-        'processed_at': -1
-      }
-    }, function(err, orders) {
-      console.log(err)
-      // console.log(orders)
-      var ordersClean = Array.from(new Set(orders.map(a => a.id)))
-        .map(id => {
-          return orders.find(a => a.id === id)
-        })
-      res.render('orders', {
-        orders: ordersClean,
-        moment: moment
-      })
-    })
-  } else {
-    ordersDB.find({
+  var findQuery = {};
+  if (order !== '') {
+    findQuery = {
       $or: [{
-        "name": order_number
+        name: order_number
       }, {
-        "customer.first_name": new RegExp('^' + order + '$', "i")
+        'customer.first_name': new RegExp('^' + order + '$', 'i')
       }]
-    }, {
-      limit: 500,
-      sort: {
-        'processed_at': -1
-      }
-    }, function(err, orders) {
-      console.log(err)
-      // console.log(orders)
-      var ordersClean = Array.from(new Set(orders.map(a => a.id)))
-        .map(id => {
-          return orders.find(a => a.id === id)
-        })
-      res.render('orders', {
-        orders: ordersClean,
-        moment: moment
-      })
-    })
+    };
   }
-
-})
+  fetchOrdersList(req.db, findQuery, { limit: 500, sort: { processed_at: -1 } }, function(err, orders) {
+    if (err) {
+      console.log(err);
+      return next(err);
+    }
+    renderOrdersPage(req, res, {
+      orders: orders,
+      defaultFilter: 'all',
+      pageTitle: order ? 'Search results' : 'Orders',
+      pageSubtitle: order ? ('Matching "' + order + '"') : 'Recent orders'
+    });
+  });
+});
 
 // '01/05/2021, Local Delivery, Local Delivery Order'
 // '01/04/2021, 16:00, Pickup Order'
@@ -447,19 +306,45 @@ router.post('/new2/order', function(req, res) {
 
 
 
+router.post('/order/:id/status', isLoggedIn, function(req, res, next) {
+  var db = req.db;
+  var ordersDB = db.get('orders');
+  var status = (req.body && req.body.status) || 'complete';
+  var queryId = parseOrderId(req.params.id);
+  var updates = {};
+
+  var updateOp;
+  if (status === 'complete') {
+    updateOp = {
+      $set: {
+        staff_status: 'complete',
+        completed_at: new Date()
+      }
+    };
+  } else {
+    updateOp = {
+      $set: { staff_status: 'pending' },
+      $unset: { completed_at: '' }
+    };
+  }
+
+  ordersDB.update({ _id: queryId }, updateOp, function(err, count) {
+    if (err) {
+      console.log(err);
+      return res.status(500).json({ ok: false, error: 'update failed' });
+    }
+    if (req.xhr || (req.headers.accept && req.headers.accept.indexOf('json') !== -1)) {
+      return res.json({ ok: true, status: status === 'complete' ? 'complete' : 'pending' });
+    }
+    res.redirect(req.get('Referer') || '/orders');
+  });
+});
+
 router.get('/order/reprint/pdf/:id', isLoggedIn, function(req, res, next) {
   var id = req.params.id;
   var db = req.db;
   var ordersDB = db.get('orders');
   var responded = false;
-
-  function escapeHtml(text) {
-    return String(text)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
-  }
 
   function renderPrintResult(message) {
     if (responded) {
@@ -467,13 +352,7 @@ router.get('/order/reprint/pdf/:id', isLoggedIn, function(req, res, next) {
     }
     responded = true;
     console.log('REPRINT RESULT: ' + message);
-    var safe = escapeHtml(message);
-    res.send(
-      '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Print</title></head>' +
-      '<body style="padding:50px;font-family:Helvetica,Arial,sans-serif">' +
-      '<h1>' + safe + '</h1>' +
-      '<p><a href="/orders">Return to orders</a></p></body></html>'
-    );
+    res.render('index', { message: message });
   }
 
   var queryId = id;
@@ -495,7 +374,7 @@ router.get('/order/reprint/pdf/:id', isLoggedIn, function(req, res, next) {
     }
 
     console.log('REPRINT queued for order #' + doc.order_number);
-    printOrder.enqueuePrint(doc, {
+    printOrder.enqueuePrint(doc, db, {
       logLabel: 'REPRINT',
       cacheBust: true,
       reprintDelay: 4000

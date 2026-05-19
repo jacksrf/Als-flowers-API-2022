@@ -1,0 +1,74 @@
+<%- include('head', { title: typeof pageTitle !== 'undefined' ? pageTitle : 'Orders' }) %>
+<%- include('nav') %>
+
+<main class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+  <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <h1 class="text-2xl font-semibold tracking-tight"><%= typeof pageTitle !== 'undefined' ? pageTitle : 'Orders' %></h1>
+      <% if (typeof pageSubtitle !== 'undefined' && pageSubtitle) { %>
+        <p class="mt-1 text-sm text-muted-foreground"><%= pageSubtitle %></p>
+      <% } %>
+    </div>
+    <% if (typeof showDateSearch === 'undefined' || showDateSearch) { %>
+      <form action="/orders/search" method="post" class="flex w-full max-w-md gap-2 sm:w-auto">
+        <input class="input flex-1" name="order" placeholder="Order # or customer name" type="text" />
+        <button type="submit" class="btn-primary">Search</button>
+      </form>
+    <% } %>
+  </div>
+
+  <% if (typeof showDateSearch === 'undefined' || showDateSearch) { %>
+    <form action="" method="post" id="date_form" class="mb-4 flex max-w-md gap-2">
+      <input class="input flex-1" name="date" type="date" />
+      <button type="button" id="search_day" class="btn-outline">By date</button>
+    </form>
+  <% } %>
+
+  <div class="mb-4 flex flex-wrap gap-2">
+    <% var filters = [
+      { key: 'active', label: 'Active' },
+      { key: 'all', label: 'All' },
+      { key: 'arrangement', label: 'Arrangements' },
+      { key: 'other', label: 'Other' },
+      { key: 'complete', label: 'Complete' }
+    ]; %>
+    <% var baseUrl = typeof listBaseUrl !== 'undefined' ? listBaseUrl : '/orders'; %>
+    <% for (var fi = 0; fi < filters.length; fi++) { %>
+      <% var f = filters[fi]; %>
+      <a href="<%= baseUrl %>?filter=<%= f.key %>"
+         class="<%= (typeof filter !== 'undefined' && filter === f.key) ? 'btn-primary btn-sm' : 'btn-outline btn-sm' %>">
+        <%= f.label %>
+      </a>
+    <% } %>
+  </div>
+
+  <div class="card overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b bg-muted/50">
+            <th class="h-10 px-3 text-left font-medium text-muted-foreground">Order</th>
+            <th class="h-10 px-3 text-left font-medium text-muted-foreground">Type</th>
+            <th class="h-10 px-3 text-left font-medium text-muted-foreground">Fulfillment</th>
+            <th class="h-10 px-3 text-left font-medium text-muted-foreground">Print</th>
+            <th class="h-10 px-3 text-left font-medium text-muted-foreground">Status</th>
+            <th class="h-10 px-3 text-right font-medium text-muted-foreground">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (!orders || orders.length === 0) { %>
+            <tr>
+              <td colspan="6" class="p-8 text-center text-muted-foreground">No orders in this view.</td>
+            </tr>
+          <% } else { %>
+            <% for (var i = 0; i < orders.length; i++) { %>
+              <%- include('order-row', { order: orders[i] }) %>
+            <% } %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<%- include('foot-scripts') %>
