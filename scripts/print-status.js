@@ -9,10 +9,15 @@
  * Flags:
  *   --apply              actually write fixes to Mongo (default: dry-run)
  *   --days <n>           include orders from the last n days (default: 7)
- *   --limit <n>          how many PrintNode jobs to fetch (default: 500, max: 500 per page)
+ *   --limit <n>          how many PrintNode jobs to fetch (default: 500, max: 5000)
+ *   --mongo-limit <n>    how many Mongo orders to scan (default: 2000)
  *   --order <n>          only process a single Shopify order_number
  *   --json               emit machine-readable JSON instead of the human table
  *   --verbose            include OK rows in the table (default: only actionable rows)
+ *
+ * Note: PrintNode only retains jobs for ~30 days, so orders older than that
+ * will always show as PURGED. Long --days windows are still useful for
+ * spotting orders that have no print job recorded at all.
  */
 
 var monk = require('monk');
@@ -31,6 +36,7 @@ var argv = parseArgs(process.argv.slice(2));
 var apply = !!argv.apply;
 var sinceDays = parseInt(argv.days || '7', 10);
 var limit = clamp(parseInt(argv.limit || PRINTNODE_MAX_PER_PAGE, 10), 1, 5000);
+var mongoLimit = clamp(parseInt(argv['mongo-limit'] || '2000', 10), 1, 100000);
 var onlyOrderNumber = argv.order ? parseInt(argv.order, 10) : null;
 var jsonOutput = !!argv.json;
 var verbose = !!argv.verbose;
@@ -56,7 +62,7 @@ async function main() {
     var query = buildOrderQuery(since, onlyOrderNumber);
     var orders = await db.get('orders').find(query, {
       sort: { created_at: -1 },
-      limit: onlyOrderNumber ? 5 : 2000,
+      limit: onlyOrderNumber ? 5 : mongoLimit,
       fields: {
         _id: 1,
         order_number: 1,
@@ -500,9 +506,12 @@ function summarize(rows) {
 
 function printReport(report) {
   console.log('PrintNode status report — last ' + report.sinceDays + ' day(s)');
-  console.log('  Orders scanned : ' + report.ordersScanned);
+  console.log('  Orders scanned : ' + report.ordersScanned + (report.ordersScanned >= mongoLimit ? '  (HIT --mongo-limit, increase to see older orders)' : ''));
   console.log('  PrintNode jobs : ' + report.printnodeJobsFetched + ' (states: ' + report.printnodeStatesFetched + ')');
   console.log('  Mode           : ' + (report.apply ? 'APPLY (writing fixes)' : 'dry-run'));
+  if (report.sinceDays > 30) {
+    console.log('  Note           : PrintNode retains jobs ~30 days. Orders older than that will show as PURGED.');
+  }
   console.log('');
 
   var visible = report.rows.filter(function(r) {
