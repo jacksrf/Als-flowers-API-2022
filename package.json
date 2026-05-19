@@ -4,7 +4,9 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/als-flowers-api",
-    "build:css": "tailwindcss -i ./assets/input.css -o ./public/stylesheets/app.css --minify"
+    "build:css": "tailwindcss -i ./assets/input.css -o ./public/stylesheets/app.css --minify",
+    "print:status": "node ./scripts/print-status.js",
+    "print:status:apply": "node ./scripts/print-status.js --apply"
   },
   "engines": {
     "node": "11.0.0",
